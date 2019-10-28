@@ -56,7 +56,7 @@ class ModelMatrix:
                         0, 0, 0, 1]
         self.add_transformation(other_matrix)
     
-    def add_rotateX(self, angle):
+    def add_rotate_x(self, angle):
         c = cos(angle) # angle in radians
         s = sin(angle) 
         other_matrix = [1, 0, 0, 0,
@@ -65,7 +65,7 @@ class ModelMatrix:
                         0, 0, 0, 1]
         self.add_transformation(other_matrix)
 
-    def add_rotateY(self, angle):
+    def add_rotate_y(self, angle):
         c = cos(angle) # angle in radians
         s = sin(angle) 
         other_matrix = [c, 0, s, 0,
@@ -74,7 +74,7 @@ class ModelMatrix:
                         0, 0, 0, 1]
         self.add_transformation(other_matrix)
     
-    def add_rotateZ(self, angle):
+    def add_rotate_z(self, angle):
         c = cos(angle) # angle in radians
         s = sin(angle) 
         other_matrix = [c, -s, 0, 0,
