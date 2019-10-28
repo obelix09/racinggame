@@ -132,7 +132,7 @@ class GraphicsProgram3D:
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
 
-        glBindTexture(GL_TEXTURE_2D, self.texture_id02)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.cube.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
