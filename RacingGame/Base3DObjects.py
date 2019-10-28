@@ -1,0 +1,192 @@
+
+import random
+from random import *
+
+from OpenGL.GL import *
+from OpenGL.GLU import *
+
+import math
+from math import *
+
+
+class Point:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
+
+class Vector:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+    
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __mul__(self, scalar):
+        return Vector(self.x * scalar, self.y * scalar, self.z * scalar)
+    
+    def __len__(self):
+        return sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+    
+    def normalize(self):
+        length = self.__len__()
+        self.x /= length
+        self.y /= length
+        self.z /= length
+
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y + self.z * other.z
+
+    def cross(self, other):
+        return Vector(self.y*other.z - self.z*other.y, self.z*other.x - self.x*other.z, self.x*other.y - self.y*other.x)
+
+class Cube:
+    def __init__(self):
+        self.position_array = [
+                            #Back
+                            0.5, -0.5, -0.5,
+                            0.5, 0.5, -0.5,
+                            -0.5, 0.5, -0.5,
+                            -0.5, -0.5, -0.5,
+                            #Front
+                            -0.5, -0.5, 0.5,
+                            -0.5, 0.5, 0.5,
+                            0.5, 0.5, 0.5,
+                            0.5, -0.5, 0.5,
+                            #Down
+                            -0.5, -0.5, -0.5,
+                            -0.5, -0.5, 0.5,
+                            0.5, -0.5, 0.5,
+                            0.5, -0.5, -0.5,
+                            #Up
+                            -0.5, 0.5, 0.5,
+                            -0.5, 0.5, -0.5,
+                            0.5, 0.5, -0.5,
+                            0.5, 0.5, 0.5,
+                            #Left
+                            -0.5, -0.5, -0.5,
+                            -0.5, 0.5, -0.5,
+                            -0.5, 0.5, 0.5,
+                            -0.5, -0.5, 0.5,
+                            #Right
+                            0.5, -0.5, 0.5,
+                            0.5, 0.5, 0.5,
+                            0.5, 0.5, -0.5,
+                            0.5, -0.5, -0.5]
+        self.normal_array = [
+                            #Back
+                            0.0, 0.0, 1.0,
+                            0.0, 0.0, 1.0,
+                            0.0, 0.0, 1.0,
+                            0.0, 0.0, 1.0,
+                            #Front
+                            0.0, 0.0, -1.0,
+                            0.0, 0.0, -1.0,
+                            0.0, 0.0, -1.0,
+                            0.0, 0.0, -1.0,
+                            #Down
+                            0.0, 1.0, 0.0,
+                            0.0, 1.0, 0.0,
+                            0.0, 1.0, 0.0,
+                            0.0, 1.0, 0.0,
+                            #Up
+                            0.0, -1.0, 0.0,
+                            0.0, -1.0, 0.0,
+                            0.0, -1.0, 0.0,
+                            0.0, -1.0, 0.0,
+                            #Left 
+                            1.0, 0.0, 0.0,
+                            1.0, 0.0, 0.0,
+                            1.0, 0.0, 0.0,
+                            1.0, 0.0, 0.0,
+                            #Right
+                            -1.0, 0.0, 0.0,
+                            -1.0, 0.0, 0.0,
+                            -1.0, 0.0, 0.0,
+                            -1.0, 0.0, 0.0]
+        self.uv_array = [
+                        # back (DONE)
+                        0.25, 0.334,
+                        0.25, 0.665, 
+                        0.5, 0.665, 
+                        0.5, 0.334,
+                        # front (DONE)
+                        0.75, 0.334,
+                        0.75, 0.665, 
+                        1.0, 0.665, 
+                        1.0, 0.334,
+                        # down
+                        0.75, 0.0,
+                        0.75, 0.334, 
+                        1.0, 0.334, 
+                        1.0, 0.0,
+                        # up
+                        0.75, 0.665,
+                        0.75, 1.0, 
+                        1.0, 1.0, 
+                        1.0, 0.665,
+                        # left
+                        0.5, 0.334,
+                        0.5, 0.665, 
+                        0.75, 0.665, 
+                        0.75, 0.334,
+                        # right (DONE)
+                        0.0, 0.334,
+                        0.0, 0.665, 
+                        0.25, 0.665, 
+                        0.25, 0.334]
+    
+    def set_vertices(self, shader):
+        shader.set_position_attribute(self.position_array)
+        shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
+
+    def draw(self, shader):
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 4, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 8, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 12, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
+
+class Sphere:
+    def __init__(self, stacks = 12, slices = 24):
+        self.vertex_array = []
+        self.slices = slices
+        
+        stack_interval = pi / stacks
+        slice_interval = 2.0 * pi / slices
+        self.vertex_count = 0
+
+        for stack_count in range(stacks):
+            stack_angle = stack_count * stack_interval
+            for slice_count in range(slices + 1):
+                slice_angle = slice_count * slice_interval
+                self.vertex_array.append(sin(stack_angle) * cos(slice_angle))
+                self.vertex_array.append(cos(stack_angle))
+                self.vertex_array.append(sin(stack_angle) * sin(slice_angle))
+
+                self.vertex_array.append(sin(stack_angle + stack_interval) * cos(slice_angle))
+                self.vertex_array.append(cos(stack_angle + stack_interval))
+                self.vertex_array.append(sin(stack_angle + stack_interval) * sin(slice_angle))
+
+                self.vertex_count += 2
+
+    def set_vertices(self, shader):
+        shader.set_position_attribute(self.vertex_array)
+        shader.set_normal_attribute(self.vertex_array)
+    
+    def draw(self, shader):
+        for i in range(0, self.vertex_count, (self.slices + 1) * 2):
+            glDrawArrays(GL_TRIANGLE_STRIP, i, (self.slices + 1) * 2)
