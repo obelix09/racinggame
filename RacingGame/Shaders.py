@@ -54,8 +54,8 @@ class Shader3D:
         self.materialShininessLoc = glGetUniformLocation(self.renderingProgramID, "u_mat_shininess")
 
         # texture stuff
-        self.diffuseTextureLoc = glGetUniformLocation(self.renderingProgramID, "u_skybox")
-
+        self.diffuseTextureLoc = glGetUniformLocation(self.renderingProgramID, "u_diffuse_texture")
+        self.specularTextureLoc = glGetUniformLocation(self.renderingProgramID, "u_specular_texture")
 
     def use(self):
         try:
@@ -103,5 +103,8 @@ class Shader3D:
     def set_material_shininess(self, shininess):
         glUniform1f(self.materialShininessLoc, shininess)
     
-    def set_diffuce_texture(self, tex):
-        glUniform1f(self.diffuseTextureLoc, tex)
+    def set_diffuce_tex(self, number):
+        glUniform1i(self.diffuseTextureLoc, number)
+
+    def set_specular_tex(self, number):
+        glUniform1i(self.specularTextureLoc, number)

@@ -28,7 +28,7 @@ class GraphicsProgram3D:
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
 
         self.projection_matrix = ProjectionMatrix()
-        self.projection_matrix.set_perspective(pi/2, 800/600, 0.5, 120)
+        self.projection_matrix.set_perspective(pi/2, 800/600, 0.5, 500)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.skybox = Skybox()
@@ -58,6 +58,7 @@ class GraphicsProgram3D:
         self.texture_id01 = self.load_texture("/textures/spacesky.webp")
         self.texture_id02 = self.load_texture("/textures/box2.png")
         self.texture_id03 = self.load_texture("/textures/grass.jpg")
+        self.texture_id04 = self.load_texture("/textures/raindrops.jpg")
 
     def load_texture(self, path_string):
         skybox = pygame.image.load(sys.path[0] + path_string)
@@ -101,40 +102,51 @@ class GraphicsProgram3D:
         glViewport(0, 0, 800, 600)
 
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
-        self.shader.set_eye_position(self.view_matrix.eye)
-        self.shader.set_light_position(self.view_matrix.eye)
-        self.shader.set_light_diffuse(1.0, 1.0, 1.0)
-        
-        # self.shader.set_light_position(Point(10.0, 1.0, 10.0))
+        # self.shader.set_eye_position(self.view_matrix.eye)
+        # self.shader.set_light_position(self.view_matrix.eye)
         # self.shader.set_light_diffuse(1.0, 1.0, 1.0)
-        # self.shader.set_light_specular(1.0, 1.0, 1.0)
+        
+        self.shader.set_light_position(Point(4.0, 4.0, 4.0))
+        self.shader.set_light_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_light_specular(1.0, 1.0, 1.0)
 
         self.model_matrix.load_identity()
         self.skybox.set_vertices(self.shader)
 
+        glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture_id01)
+        self.shader.set_diffuce_tex(0)
+
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        # self.shader.set_material_specular(0.1, 0.8, 0.1)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_scale(100,100,100)
+        self.model_matrix.add_scale(400,400,400)
         # self.model_matrix.add_rotate_y(self.angle * 0.5)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.skybox.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture_id02)
+        self.shader.set_diffuce_tex(0)
+        glActiveTexture(GL_TEXTURE1)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id04)
+        self.shader.set_specular_tex(1)
         self.cube.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        # self.shader.set_material_specular(0.1, 0.8, 0.1)
+        self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
         # self.model_matrix.add_rotate_x(self.angle * 0.5)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
+        self.shader.set_diffuce_tex(0)
         self.cube.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0,-2,0)
         self.model_matrix.add_scale(50,0.5,50)
