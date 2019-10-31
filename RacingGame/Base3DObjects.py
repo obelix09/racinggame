@@ -133,9 +133,9 @@ class Cube:
                         1.0, 0.0,
                         # up
                         0.0, 0.0,
-                        0.0, 1.0, 
-                        1.0, 1.0, 
-                        1.0, 0.0,
+                        0.0, 10.0, 
+                        5.0, 5.0, 
+                        5.0, 0.0,
                         # left
                         0.0, 0.0,
                         0.0, 1.0, 
@@ -190,6 +190,12 @@ class Sphere:
     def draw(self, shader):
         for i in range(0, self.vertex_count, (self.slices + 1) * 2):
             glDrawArrays(GL_TRIANGLE_STRIP, i, (self.slices + 1) * 2)
+
+# class Ghost:
+#     def __init__(self):
+#         self.position_array = [0.0
+
+#         ]
 
 class Skybox:
     def __init__(self):
