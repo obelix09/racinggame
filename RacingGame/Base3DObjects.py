@@ -199,7 +199,6 @@ class Circle_2D:
         def __init__(self, x, y , z,  radius = 15, sides = 19):
             self.fullCircle = 2.2 * pi
             self.vertices = []
-            self.miniVertices = []
             self.normals = [] 
             self.uv_array = [] 
 
