@@ -35,8 +35,9 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.skybox = Skybox()
-        self.circle = Circle(0, 0, 0)
+        self.circle_2D = Circle_2D(0, 0, 0)
         self.cube = Cube()
+        self.cube_2D = Cube_2D()
         self.racecar = Racecar()
         self.clock = pygame.time.Clock()
         self.clock.tick()
@@ -103,6 +104,7 @@ class GraphicsProgram3D:
         self.texture_id06 = self.load_texture("/textures/blue.jpg")
         self.texture_id07 = self.load_texture("/textures/red.jpg")
         self.texture_id08 = self.load_texture("/textures/boarder.jpg")
+        self.texture_id09 = self.load_texture("/textures/goal.jpg")
 
 
     def load_texture(self, path_string):
@@ -232,9 +234,28 @@ class GraphicsProgram3D:
            
 
     def displayScreen(self):
-        self.shader.set_light_position(Point(4.0, 4.0, 4.0))
-        self.shader.set_light_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_light_specular(1.0, 1.0, 1.0)
+        # Setting up the light positions:
+        # Every object has the same specular and ambient for their material
+        self.shader.set_light_ambient(0.3, 0.3, 0.3)
+        self.shader.set_material_ambient(0.3, 0.3, 0.3)
+        self.shader.set_material_specular(0.4, 0.4, 0.4)
+        self.shader.set_material_shininess(15)
+
+        # Light 1 (Racer 1):
+        self.shader.set_light_1_position(self.view_matrix_1.eye)
+        self.shader.set_light_1_diffuse(0.4, 0.4, 0.4)
+        self.shader.set_light_1_specular(0.4, 0.4, 0.4)
+
+        # Light 2 (Racer 2):
+        self.shader.set_light_2_position(self.view_matrix_2.eye)
+        self.shader.set_light_2_diffuse(0.4, 0.4, 0.4)
+        self.shader.set_light_2_specular(0.4, 0.4, 0.4)
+        
+        # Light 3:
+        self.shader.set_light_3_position(Point(4.0, 4.0, 4.0))
+        self.shader.set_light_3_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_light_3_specular(1.0, 1.0, 1.0)
+        
         self.model_matrix.load_identity()
 
         #Skybox
@@ -271,14 +292,14 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.4, 0.8)
         self.model_matrix.add_scale(2.1, 0.5, 4.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Track
@@ -287,14 +308,30 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id05)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.5, 0.8)
         self.model_matrix.add_scale(2, 0.5, 4)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        # Goal
+        glActiveTexture(GL_TEXTURE0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id09)
+        self.shader.set_diffuce_tex(0)
+        self.cube_2D.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(23.4, 0.4, 0.8)
+        self.model_matrix.add_scale(13.4, 0.5, 1)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.cube_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Inner boarder
@@ -303,14 +340,14 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.6, 0.8)
         self.model_matrix.add_scale(1.1, 0.5, 3.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Inner boarder with grass or smallerTrack
@@ -319,16 +356,15 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.7, 0.8)
         self.model_matrix.add_scale(1, 0.5, 3)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
-
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
