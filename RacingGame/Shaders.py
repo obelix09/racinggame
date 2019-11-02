@@ -88,8 +88,8 @@ class Shader3D:
     def set_light_diffuse(self, r, g, b):
         glUniform4f(self.lightDiffuseLoc, r, g, b, 1.0)
 
-    def set_material_diffuse(self, r, g, b):
-        glUniform4f(self.materialDiffuseLoc , r, g, b, 1.0)
+    def set_material_diffuse(self, r, g, b, alpha=1.0):
+        glUniform4f(self.materialDiffuseLoc , r, g, b, alpha)
 
     def set_eye_position(self, pos):
         glUniform4f(self.eyePositionLoc, pos.x, pos.y, pos.z, 1.0)

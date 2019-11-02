@@ -21,6 +21,8 @@ void main(void)
 {	
 	vec4 mat_diffuse = u_mat_diffuse * texture2D(u_diffuse_texture, v_uv);
 	vec4 mat_specular = u_mat_specular * texture2D(u_specular_texture, v_uv);
+	float opacity = texture2D(u_diffuse_texture, v_uv).r;
+
 
 	float lambert = max(dot(v_normal, v_s), 0.0);
 	float phong = max(dot(v_normal, v_h), 0.0);
@@ -28,4 +30,5 @@ void main(void)
 	// Add u_light_ambient and mat
 	gl_FragColor = u_light_diffuse * mat_diffuse * lambert 
 			    + u_light_specular * mat_specular * pow(phong, u_mat_shininess);
+	gl_FragColor.a = opacity;
 }

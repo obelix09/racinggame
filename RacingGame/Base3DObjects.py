@@ -133,9 +133,9 @@ class Cube:
                         1.0, 0.0,
                         # up
                         0.0, 0.0,
-                        0.0, 1.0, 
-                        1.0, 1.0, 
-                        1.0, 0.0,
+                        0.0, 10.0, 
+                        5.0, 5.0, 
+                        5.0, 0.0,
                         # left
                         0.0, 0.0,
                         0.0, 1.0, 
@@ -166,6 +166,7 @@ class Track:
             self.vertices = []
             self.miniVertices = []
             self.normals = [] 
+            self.uv_array = [] 
 
             self.nrOfVertices = sides + 1
             self.vertices.append(x)
@@ -174,6 +175,9 @@ class Track:
             self.normals.append(0)
             self.normals.append(1)
             self.normals.append(0)
+            self.uv_array.append(0)
+            self.uv_array.append(2)
+            self.uv_array.append(0)
             for count in range(sides):
                 self.vertices.append(x + ( radius * cos( count *  self.fullCircle / sides )))
                 self.vertices.append(y)
@@ -181,10 +185,14 @@ class Track:
                 self.normals.append(0)
                 self.normals.append(1)
                 self.normals.append(0)
+                self.uv_array.append(0)
+                self.uv_array.append(2)
+                self.uv_array.append(0)
 
         def set_vertices(self, shader):
             shader.set_position_attribute(self.vertices)
             shader.set_normal_attribute(self.normals)
+            shader.set_uv_attribute(self.uv_array)
 
         def draw(self, shader):
             glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
@@ -194,7 +202,8 @@ class innerCircle:
         def __init__(self, x, y , z,  radius = 5, sides = 19):
             self.fullCircle = 2.2 * pi
             self.miniVertices = []
-            self.normals = [] 
+            self.normals = []
+            self.uv_array = [] 
 
             self.nrOfVertices = sides + 1
             self.miniVertices.append(x)
@@ -203,6 +212,9 @@ class innerCircle:
             self.normals.append(0)
             self.normals.append(1)
             self.normals.append(0)
+            self.uv_array.append(0)
+            self.uv_array.append(2)
+            self.uv_array.append(0)
             for count in range(sides):
                 self.miniVertices.append( + ( radius * cos( count *  self.fullCircle / sides )))
                 self.miniVertices.append(y / 2)
@@ -210,14 +222,24 @@ class innerCircle:
                 self.normals.append(0)
                 self.normals.append(1)
                 self.normals.append(0)
+                self.uv_array.append(0)
+                self.uv_array.append(2)
+                self.uv_array.append(0)
 
         def set_vertices(self, shader):
             shader.set_position_attribute(self.miniVertices)
             shader.set_normal_attribute(self.normals)
+            shader.set_uv_attribute(self.uv_array)
 
         def draw(self, shader):
             glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
 
+
+# class Ghost:
+#     def __init__(self):
+#         self.position_array = [0.0
+
+#         ]
 
 class Skybox:
     def __init__(self):
