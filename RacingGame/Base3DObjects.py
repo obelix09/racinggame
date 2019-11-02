@@ -133,7 +133,7 @@ class Cube:
                         1.0, 0.0,
                         # up
                         0.0, 0.0,
-                        0.0, 10.0, 
+                        0.0, 5.0, 
                         5.0, 5.0, 
                         5.0, 0.0,
                         # left
@@ -313,7 +313,7 @@ class Skybox:
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
 
-class OptimizedCube:
+class Racecar:
     def __init__(self):
         self.position_array = [
                             #Back
@@ -408,18 +408,12 @@ class OptimizedCube:
                         0.0, 1.0, 
                         1.0, 1.0, 
                         1.0, 0.0]               
-        
-        # # gl gives me an id, 1 = one buffer
-        # self.vertex_buffer_id = glGenBuffers(1)
-        # # i want your glbuffer to be this buffer (idno)
-        # glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer_id)
-        # glBufferData(GL_ARRAY_BUFFER, numpy.array(vertex_array, dtype='float32'), GL_STATIC_DRAW)
-
+    
     def set_vertices(self, shader):
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
         shader.set_uv_attribute(self.uv_array)
-
+    
     def draw(self, shader):
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 4, 4)
