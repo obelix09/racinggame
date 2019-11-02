@@ -22,20 +22,23 @@ class GraphicsProgram3D:
         self.shader.use()
 
         self.model_matrix = ModelMatrix()
+        self.collision_radius = 0.5
 
         self.view_matrix_1 = ViewMatrix()
         self.view_matrix_2 = ViewMatrix()
-        self.view_matrix_1.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
-        self.view_matrix_2.look(Point(3, 0, 0), Point(0, 0, 0), Vector(0, 1, 0))
+        # Cam position - looking at - upVector
+        self.view_matrix_1.look(Point(0, 1, 3), Point(0, 0, 0), Vector(0, 1, 0))
+        self.view_matrix_2.look(Point(3, 1, 0), Point(0, 0, 0), Vector(0, 1, 0))
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(pi/3, 800/300, 0.5, 500)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.skybox = Skybox()
+        self.trackPosition = 1
+        self.track = Track(self.trackPosition / 2, self.trackPosition / 2, 0)
+        self.innerCircle = innerCircle(self.trackPosition, self.trackPosition, 0)
         self.cube = Cube()
-        self.sphere = Sphere()
-
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
@@ -70,6 +73,7 @@ class GraphicsProgram3D:
         self.texture_id02 = self.load_texture("/textures/box2.png")
         self.texture_id03 = self.load_texture("/textures/grass.jpg")
         self.texture_id04 = self.load_texture("/textures/raindrops.jpg")
+        self.texture_id05 = self.load_texture("/textures/concrete.jpg")
 
     def load_texture(self, path_string):
         skybox = pygame.image.load(sys.path[0] + path_string)
@@ -137,6 +141,8 @@ class GraphicsProgram3D:
         self.shader.set_light_specular(1.0, 1.0, 1.0)
 
         self.model_matrix.load_identity()
+
+        # Skybox
         self.skybox.set_vertices(self.shader)
 
         glActiveTexture(GL_TEXTURE0)
@@ -152,47 +158,63 @@ class GraphicsProgram3D:
         self.skybox.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        # Track
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id02)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id05)
         self.shader.set_diffuce_tex(0)
-        glActiveTexture(GL_TEXTURE1)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id04)
-        self.shader.set_specular_tex(1)
-        self.cube.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
-        self.model_matrix.push_matrix()
-        # self.model_matrix.add_rotate_x(self.angle * 0.5)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id03)
-        self.shader.set_diffuce_tex(0)
-        self.cube.set_vertices(self.shader)
+        self.track.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(0,-2,0)
-        self.model_matrix.add_scale(50,0.5,50)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
+        self.track.draw(self.shader)
         self.model_matrix.pop_matrix()
+
+        # Inner Circle or Track
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id03)
+        self.shader.set_diffuce_tex(0)
+        self.innerCircle.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
+        self.model_matrix.push_matrix()
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.innerCircle.draw(self.shader)
+        self.model_matrix.pop_matrix()
+        
 
     def display(self):
         glEnable(GL_DEPTH_TEST)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
+        # Player 1 camera
         self.shader.set_view_matrix(self.view_matrix_1.get_matrix())
         glViewport(0, 0, 800, 300)
         self.displayScreen()
 
+        # Player 2 camera
         self.shader.set_view_matrix(self.view_matrix_2.get_matrix())
         glViewport(0, 300, 800, 300)
         self.displayScreen()
-        
+
         pygame.display.flip()
+
+    def goalEntered(self):
+        temp_ang = 0
+        while temp_ang < 2 * pi:
+            x1 = self.view_matrix_1.eye.x + self.collision_radius * cos(temp_ang)
+            y1 = self.view_matrix_1.eye.y
+            z1 = self.view_matrix_1.eye.z + self.collision_radius * sin(temp_ang)
+            x2 = self.view_matrix_2.eye.x + self.collision_radius * cos(temp_ang)
+            y2 = self.view_matrix_2.eye.y
+            z2 = self.view_matrix_2.eye.z + self.collision_radius * sin(temp_ang)
+            temp_ang += (pi * 2)/16
+            point1 = Point(x1, y1, z1) 
+            point2 = Point(x2, y2, z2) 
+            if point1.x >= self.cube_collision_points[0] and point1.x <= self.cube_collision_points[1] or point2.x >= self.cube_collision_points[0] and point2.x <= self.cube_collision_points[1]:
+                    if point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3] or point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3]:
+                        self.view_matrix_1.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
+                        self.view_matrix_2.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
 
     def program_loop(self):
         exiting = False

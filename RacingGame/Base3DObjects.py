@@ -160,36 +160,64 @@ class Cube:
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
 
-class Sphere:
-    def __init__(self, stacks = 12, slices = 24):
-        self.vertex_array = []
-        self.slices = slices
-        
-        stack_interval = pi / stacks
-        slice_interval = 2.0 * pi / slices
-        self.vertex_count = 0
+class Track:
+        def __init__(self, x, y , z,  radius = 10, sides = 19):
+            self.fullCircle = 2.2 * pi
+            self.vertices = []
+            self.miniVertices = []
+            self.normals = [] 
 
-        for stack_count in range(stacks):
-            stack_angle = stack_count * stack_interval
-            for slice_count in range(slices + 1):
-                slice_angle = slice_count * slice_interval
-                self.vertex_array.append(sin(stack_angle) * cos(slice_angle))
-                self.vertex_array.append(cos(stack_angle))
-                self.vertex_array.append(sin(stack_angle) * sin(slice_angle))
+            self.nrOfVertices = sides + 1
+            self.vertices.append(x)
+            self.vertices.append(y)
+            self.vertices.append(z)
+            self.normals.append(0)
+            self.normals.append(1)
+            self.normals.append(0)
+            for count in range(sides):
+                self.vertices.append(x + ( radius * cos( count *  self.fullCircle / sides )))
+                self.vertices.append(y)
+                self.vertices.append(z + ( radius * sin( count * self.fullCircle / sides )) * 3)
+                self.normals.append(0)
+                self.normals.append(1)
+                self.normals.append(0)
 
-                self.vertex_array.append(sin(stack_angle + stack_interval) * cos(slice_angle))
-                self.vertex_array.append(cos(stack_angle + stack_interval))
-                self.vertex_array.append(sin(stack_angle + stack_interval) * sin(slice_angle))
+        def set_vertices(self, shader):
+            shader.set_position_attribute(self.vertices)
+            shader.set_normal_attribute(self.normals)
 
-                self.vertex_count += 2
+        def draw(self, shader):
+            glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
 
-    def set_vertices(self, shader):
-        shader.set_position_attribute(self.vertex_array)
-        shader.set_normal_attribute(self.vertex_array)
-    
-    def draw(self, shader):
-        for i in range(0, self.vertex_count, (self.slices + 1) * 2):
-            glDrawArrays(GL_TRIANGLE_STRIP, i, (self.slices + 1) * 2)
+
+class innerCircle:
+        def __init__(self, x, y , z,  radius = 5, sides = 19):
+            self.fullCircle = 2.2 * pi
+            self.miniVertices = []
+            self.normals = [] 
+
+            self.nrOfVertices = sides + 1
+            self.miniVertices.append(x)
+            self.miniVertices.append(y)
+            self.miniVertices.append(z)
+            self.normals.append(0)
+            self.normals.append(1)
+            self.normals.append(0)
+            for count in range(sides):
+                self.miniVertices.append( + ( radius * cos( count *  self.fullCircle / sides )))
+                self.miniVertices.append(y / 2)
+                self.miniVertices.append(z + ( radius * sin( count *  self.fullCircle / sides )) * 3)
+                self.normals.append(0)
+                self.normals.append(1)
+                self.normals.append(0)
+
+        def set_vertices(self, shader):
+            shader.set_position_attribute(self.miniVertices)
+            shader.set_normal_attribute(self.normals)
+
+        def draw(self, shader):
+            glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
+
 
 class Skybox:
     def __init__(self):
