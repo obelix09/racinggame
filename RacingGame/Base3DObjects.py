@@ -161,7 +161,7 @@ class Cube:
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
 
 class Track:
-        def __init__(self, x, y , z,  radius = 10, sides = 19):
+        def __init__(self, x, y , z,  radius = 15, sides = 19):
             self.fullCircle = 2.2 * pi
             self.vertices = []
             self.miniVertices = []
@@ -179,9 +179,9 @@ class Track:
             self.uv_array.append(2)
             self.uv_array.append(0)
             for count in range(sides):
-                self.vertices.append(x + ( radius * cos( count *  self.fullCircle / sides )))
+                self.vertices.append(x + ( radius * cos( count *  self.fullCircle / sides )) * 2.5)
                 self.vertices.append(y)
-                self.vertices.append(z + ( radius * sin( count * self.fullCircle / sides )) * 3)
+                self.vertices.append(z + ( radius * sin( count * self.fullCircle / sides )) * 5)
                 self.normals.append(0)
                 self.normals.append(1)
                 self.normals.append(0)
@@ -199,7 +199,7 @@ class Track:
 
 
 class innerCircle:
-        def __init__(self, x, y , z,  radius = 5, sides = 19):
+        def __init__(self, x, y , z,  radius = 10, sides = 19):
             self.fullCircle = 2.2 * pi
             self.miniVertices = []
             self.normals = []
@@ -216,9 +216,9 @@ class innerCircle:
             self.uv_array.append(2)
             self.uv_array.append(0)
             for count in range(sides):
-                self.miniVertices.append( + ( radius * cos( count *  self.fullCircle / sides )))
+                self.miniVertices.append( + ( radius * cos( count *  self.fullCircle / sides ) * 2))
                 self.miniVertices.append(y / 2)
-                self.miniVertices.append(z + ( radius * sin( count *  self.fullCircle / sides )) * 3)
+                self.miniVertices.append(z + ( radius * sin( count *  self.fullCircle / sides )) * 5)
                 self.normals.append(0)
                 self.normals.append(1)
                 self.normals.append(0)

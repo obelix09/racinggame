@@ -35,7 +35,7 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.skybox = Skybox()
-        self.trackPosition = 1
+        self.trackPosition = 0.7
         self.track = Track(self.trackPosition / 2, self.trackPosition / 2, 0)
         self.innerCircle = innerCircle(self.trackPosition, self.trackPosition, 0)
         self.cube = Cube()
@@ -211,8 +211,7 @@ class GraphicsProgram3D:
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(0,-2,0)
-        self.model_matrix.add_scale(50,0.5,50)
+        self.model_matrix.add_scale(800,0.5,800)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
