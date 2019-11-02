@@ -39,6 +39,7 @@ class GraphicsProgram3D:
         self.track = Track(self.trackPosition / 2, self.trackPosition / 2, 0)
         self.innerCircle = innerCircle(self.trackPosition, self.trackPosition, 0)
         self.cube = Cube()
+        self.racecar = Racecar()
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
@@ -73,14 +74,14 @@ class GraphicsProgram3D:
         self.car2_pos = Point(0, 1, 0)
         self.car2_motion = Vector(0, 0, 0)
         self.car2_angle = 0
-        self.driving_speed2 = 2
+        self.driving_speed2 = 20
         self.turn_speed2 = 160
         self.current_driving_speed2 = 0
         self.current_turn_speed2 = 0
         self.total_turn2 = 0
 
         # Camera variables
-        self.distance_from_player = 5
+        self.distance_from_player = 3
         self.camera_pitch = 150 # Degrees
         self.horizontal_distance = self.distance_from_player * cos(self.camera_pitch)
         self.vertical_distance = self.distance_from_player * sin(self.camera_pitch)
@@ -89,10 +90,10 @@ class GraphicsProgram3D:
 
         # Textures
         self.texture_id01 = self.load_texture("/textures/spacesky.webp")
-        self.texture_id02 = self.load_texture("/textures/box2.png")
         self.texture_id03 = self.load_texture("/textures/grass.jpg")
-        self.texture_id04 = self.load_texture("/textures/raindrops.jpg")
         self.texture_id05 = self.load_texture("/textures/concrete.jpg")
+        self.texture_id06 = self.load_texture("/textures/blue.jpg")
+        self.texture_id07 = self.load_texture("/textures/red.jpg")
 
     def load_texture(self, path_string):
         skybox = pygame.image.load(sys.path[0] + path_string)
@@ -137,12 +138,11 @@ class GraphicsProgram3D:
             if (not self.DOWN_key_down and self.current_driving_speed1 < 0):
                 self.current_driving_speed1 += self.driving_speed1 * delta_time
                 
-        
         self.total_turn1 += self.current_turn_speed1 * delta_time
         distance = self.current_driving_speed1 * delta_time
 
         self.car1_pos.x += distance * sin(self.total_turn1 * pi/180)
-        self.car1_pos.z += distance  * cos(self.total_turn1 * pi/180)
+        self.car1_pos.z += distance * cos(self.total_turn1 * pi/180)
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
@@ -150,31 +150,38 @@ class GraphicsProgram3D:
         self.camera1_pos.z = self.car1_pos.z - (self.horizontal_distance * cos(self.total_turn1 * pi/180))
 
        ########### Car controls 2 ############
-        #go left or right 
+        #go left or right
         if (self.A_key_down):
-            if(self.W_key_down):
-                self.current_turn_speed2 = self.turn_speed2
-            elif(self.S_key_down):
-                self.current_turn_speed2 = -self.turn_speed2 
+            if(self.current_driving_speed2 > 0):
+                self.current_turn_speed2 = self.turn_speed2 * self.current_driving_speed2/20
+            elif(self.current_driving_speed2 < 0):
+                self.current_turn_speed2 = self.turn_speed2 * self.current_driving_speed2/20 
         elif (self.D_key_down):
-            if(self.W_key_down):
-                self.current_turn_speed2 = -self.turn_speed2 
-            elif(self.S_key_down):
-                self.current_turn_speed2 = self.turn_speed2 
+            if(self.current_driving_speed2 > 0):
+                self.current_turn_speed2 = -self.turn_speed2 * self.current_driving_speed2/20 
+            elif(self.current_driving_speed2 < 0):
+                self.current_turn_speed2 = -self.turn_speed2 * self.current_driving_speed2/20
         else:
-            self.current_turn_speed2 = 0
+            self.current_turn_speed2 = 0 
         # go forward
         if self.W_key_down:
-            self.current_driving_speed2 = self.driving_speed2 
-        elif self.S_key_down:
-            self.current_driving_speed2 = -self.driving_speed2 
-        else:
-            self.current_driving_speed2 = 0
-        
+            if (self.current_driving_speed2 < self.max_speed):
+                self.current_driving_speed2 += self.driving_speed2 * delta_time
+        else: 
+            if (not self.S_key_down and self.current_driving_speed2 > 0):
+                self.current_driving_speed2 -= self.driving_speed2 * delta_time
+        if self.S_key_down:
+            if (self.current_driving_speed2 > -self.max_speed):
+                self.current_driving_speed2 += -self.driving_speed2 * delta_time
+        else: 
+            if (not self.S_key_down and self.current_driving_speed2 < 0):
+                self.current_driving_speed2 += self.driving_speed2 * delta_time
+                
         self.total_turn2 += self.current_turn_speed2 * delta_time
         distance = self.current_driving_speed2 * delta_time
+
         self.car2_pos.x += distance * sin(self.total_turn2 * pi/180)
-        self.car2_pos.z += distance  * cos(self.total_turn2 * pi/180)
+        self.car2_pos.z += distance * cos(self.total_turn2 * pi/180)
 
         # Calculate camera2 position
         self.camera2_pos.x = self.car2_pos.x - (self.horizontal_distance * sin(self.total_turn2 * pi/180))
@@ -250,32 +257,33 @@ class GraphicsProgram3D:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         
         # Racecar 1
-        glActiveTexture(GL_TEXTURE1)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id04)
-        self.shader.set_specular_tex(1)
-        self.cube.set_vertices(self.shader)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
+        self.shader.set_diffuce_tex(0)
+        self.racecar.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(self.car1_pos.x, 0, self.car1_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
+        self.racecar.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Racecar 2
-        glActiveTexture(GL_TEXTURE1)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id04)
-        self.shader.set_specular_tex(1)
-        self.cube.set_vertices(self.shader)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id07)
+        self.shader.set_diffuce_tex(0)
+        self.racecar.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(self.car2_pos.x, 0, self.car2_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
+        self.racecar.draw(self.shader)
         self.model_matrix.pop_matrix()
+
         glDisable(GL_BLEND)
 
     def display(self):

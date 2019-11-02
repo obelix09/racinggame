@@ -30,5 +30,5 @@ void main(void)
 	// Add u_light_ambient and mat
 	gl_FragColor = u_light_diffuse * mat_diffuse * lambert 
 			    + u_light_specular * mat_specular * pow(phong, u_mat_shininess);
-	gl_FragColor.a = opacity;
+	gl_FragColor.a = u_mat_diffuse.a;
 }
