@@ -239,9 +239,28 @@ class GraphicsProgram3D:
            
 
     def displayScreen(self):
-        self.shader.set_light_position(Point(4.0, 4.0, 4.0))
-        self.shader.set_light_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_light_specular(1.0, 1.0, 1.0)
+        # Setting up the light positions:
+        # Every object has the same specular and ambient for their material
+        self.shader.set_light_ambient(0.3, 0.3, 0.3)
+        self.shader.set_material_ambient(0.3, 0.3, 0.3)
+        self.shader.set_material_specular(0.4, 0.4, 0.4)
+        self.shader.set_material_shininess(15)
+
+        # Light 1 (Racer 1):
+        self.shader.set_light_1_position(self.view_matrix_1.eye)
+        self.shader.set_light_1_diffuse(0.4, 0.4, 0.4)
+        self.shader.set_light_1_specular(0.4, 0.4, 0.4)
+
+        # Light 2 (Racer 2):
+        self.shader.set_light_2_position(self.view_matrix_2.eye)
+        self.shader.set_light_2_diffuse(0.4, 0.4, 0.4)
+        self.shader.set_light_2_specular(0.4, 0.4, 0.4)
+        
+        # Light 3:
+        self.shader.set_light_3_position(Point(4.0, 4.0, 4.0))
+        self.shader.set_light_3_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_light_3_specular(1.0, 1.0, 1.0)
+        
         self.model_matrix.load_identity()
 
         #Skybox
