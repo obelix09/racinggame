@@ -439,4 +439,4 @@ class Racecar:
             minPointZ = maxPointZ 
             maxPointZ = temp
 
-        return [minPointX, maxPointX, minPointZ, maxPointZ]
+        return [Point(minPointX, 0, minPointZ), Point(maxPointX, 0, minPointZ), Point(minPointX, 0, maxPointZ), Point(maxPointX, 0, maxPointZ)]
