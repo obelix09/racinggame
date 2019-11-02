@@ -91,6 +91,7 @@ class GraphicsProgram3D:
         self.texture_id03 = self.load_texture("/textures/grass.jpg")
         self.texture_id04 = self.load_texture("/textures/raindrops.jpg")
         self.texture_id05 = self.load_texture("/textures/concrete.jpg")
+        self.texture_id06 = self.load_texture("/textures/boarder.jpg")
 
     def load_texture(self, path_string):
         skybox = pygame.image.load(sys.path[0] + path_string)
@@ -214,6 +215,22 @@ class GraphicsProgram3D:
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        # Outer boarder
+        glActiveTexture(GL_TEXTURE0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
+        self.shader.set_diffuce_tex(0)
+        self.circle.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(0.5, 0.4, 0.8)
+        self.model_matrix.add_scale(2.1, 0.5, 4.1)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.circle.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
         # Track
         glActiveTexture(GL_TEXTURE0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -230,8 +247,23 @@ class GraphicsProgram3D:
         self.circle.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        # Inner boarder
+        glActiveTexture(GL_TEXTURE0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
+        self.shader.set_diffuce_tex(0)
+        self.circle.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(0.5, 0.6, 0.8)
+        self.model_matrix.add_scale(1.1, 0.5, 3.1)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.circle.draw(self.shader)
+        self.model_matrix.pop_matrix()
 
-        # Inner Circle with grass or smallerTrack
+        # Inner boarder with grass or smallerTrack
         glActiveTexture(GL_TEXTURE0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -246,6 +278,7 @@ class GraphicsProgram3D:
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.circle.draw(self.shader)
         self.model_matrix.pop_matrix()
+
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
