@@ -90,7 +90,7 @@ class GraphicsProgram3D:
 
         # Camera variables
         self.distance_from_player = 5
-        self.camera_pitch = 150 # Degrees
+        self.camera_pitch = 250 # Degrees
         self.horizontal_distance = self.distance_from_player * cos(self.camera_pitch)
         self.vertical_distance = self.distance_from_player * sin(self.camera_pitch)
         self.camera1_pos = Point(0, 1, 0)
@@ -118,35 +118,30 @@ class GraphicsProgram3D:
         return tex_id
     
     def detectCarCollision(self):
-        pass
-    #     isCollision = False
+        # self.car1_collision_points
+        # self.car2_collision_points
+        car1_collision = False
+        car2_collision = False
 
-    #     # if car1-minX is between car2-minX and car2-maxX and car1-minZ is between car2-minZ and car2-maxZ
-    #     if (self.car1_collision_points[0] >= self.car2_collision_points[0] and self.car1_collision_points[0] <= self.car2_collision_points[1]):
-    #         if (self.car1_collision_points[2] >= self.car2_collision_points[2] and self.car1_collision_points[2] <= self.car2_collision_points[3]):
-    #             print("YAY1")
-    #             isCollision = True
+        # Check collision on car1
+        for point1 in self.car1_collision_points:
+            # If point in car1 is between car2-minX and car2-maxX and between car2-minZ and car2-maxZ = collision
+            if (point1.x >= self.car2_collision_points[0].x and point1.x <= self.car2_collision_points[3].x):
+                if (point1.z >= self.car2_collision_points[0].z and point1.z <= self.car2_collision_points[3].z):
+                    car1_collision = True
+                    print("YAY1")
         
-    #     # if car1-minX is between car2-minX and car2-maxX and car1-maxZ is between car2-minZ and car2-maxZ
-    #     if (self.car1_collision_points[0] >= self.car2_collision_points[0] and self.car1_collision_points[0] <= self.car2_collision_points[1]):
-    #         if (self.car1_collision_points[3] >= self.car2_collision_points[2] and self.car1_collision_points[3] <= self.car2_collision_points[3]):
-    #             print("YAY2")
-    #             isCollision = True
-        
-    #     # if car1-maxX is between car2-minX and car2-maxX and car1-maxZ is between car2-minZ and car2-maxZ
-    #     if (self.car1_collision_points[1] >= self.car2_collision_points[0] and self.car1_collision_points[1] <= self.car2_collision_points[1]):
-    #         if (self.car1_collision_points[3] >= self.car2_collision_points[2] and self.car1_collision_points[3] <= self.car2_collision_points[3]):
-    #             print("YAY3")
-    #             isCollision = True
-        
-    #     # if car1-maxX is between car2-minX and car2-maxX and car1-minZ is between car2-minZ and car2-maxZ
-    #     if (self.car1_collision_points[1] >= self.car2_collision_points[0] and self.car1_collision_points[1] <= self.car2_collision_points[1]):
-    #         if (self.car1_collision_points[2] >= self.car2_collision_points[2] and self.car1_collision_points[2] <= self.car2_collision_points[3]):
-    #             print("YAY4")
-    #             isCollision = True
+        # Check collision on car2
+        for point2 in self.car2_collision_points:
+            # If point in car1 is between car1-minX and car1-maxX and between car1-minZ and car1-maxZ = collision
+            if (point2.x >= self.car1_collision_points[0].x and point2.x <= self.car1_collision_points[3].x):
+                if (point2.z >= self.car1_collision_points[0].z and point2.z <= self.car1_collision_points[3].z):
+                    car2_collision = True
+                    print("YAY2")
+     
+        if (not car1_collision and not car2_collision):
+            print("NO")
 
-    #     if not isCollision:
-    #         print("NO")
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
