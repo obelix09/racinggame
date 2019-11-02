@@ -35,9 +35,7 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.skybox = Skybox()
-        self.trackPosition = 1
-        self.track = Track(self.trackPosition / 2, self.trackPosition / 2, 0)
-        self.innerCircle = innerCircle(self.trackPosition, self.trackPosition, 0)
+        self.circle = Circle(0, 0, 0)
         self.cube = Cube()
         self.racecar = Racecar()
         self.clock = pygame.time.Clock()
@@ -70,6 +68,11 @@ class GraphicsProgram3D:
         self.current_turn_speed1 = 0
         self.total_turn1 = 0
 
+        # model matrix for car1
+        self.model_matrix_car1 = 0
+        # Collision coordinates car1
+        self.car1_collision_points = []
+
         # Racecar 2 variables
         self.car2_pos = Point(0, 1, 0)
         self.car2_motion = Vector(0, 0, 0)
@@ -80,8 +83,13 @@ class GraphicsProgram3D:
         self.current_turn_speed2 = 0
         self.total_turn2 = 0
 
+        # model matrix for car1
+        self.model_matrix_car2 = 0
+        # Collision coordinates car1
+        self.car2_collision_points = []
+
         # Camera variables
-        self.distance_from_player = 3
+        self.distance_from_player = 5
         self.camera_pitch = 150 # Degrees
         self.horizontal_distance = self.distance_from_player * cos(self.camera_pitch)
         self.vertical_distance = self.distance_from_player * sin(self.camera_pitch)
@@ -106,6 +114,38 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_string)
         return tex_id
+    
+    def detectCarCollision(self):
+        # self.car1_collision_points
+        # self.car2_collision_points 
+        isCollision = False
+
+        # if car1-minX is between car2-minX and car2-maxX and car1-minZ is between car2-minZ and car2-maxZ
+        if (self.car1_collision_points[0] >= self.car2_collision_points[0] and self.car1_collision_points[0] <= self.car2_collision_points[1]):
+            if (self.car1_collision_points[2] >= self.car2_collision_points[2] and self.car1_collision_points[2] <= self.car2_collision_points[3]):
+                print("YAY1")
+                isCollision = True
+        
+        # if car1-minX is between car2-minX and car2-maxX and car1-maxZ is between car2-minZ and car2-maxZ
+        if (self.car1_collision_points[0] >= self.car2_collision_points[0] and self.car1_collision_points[0] <= self.car2_collision_points[1]):
+            if (self.car1_collision_points[3] >= self.car2_collision_points[2] and self.car1_collision_points[3] <= self.car2_collision_points[3]):
+                print("YAY2")
+                isCollision = True
+        
+        # if car1-maxX is between car2-minX and car2-maxX and car1-maxZ is between car2-minZ and car2-maxZ
+        if (self.car1_collision_points[1] >= self.car2_collision_points[0] and self.car1_collision_points[1] <= self.car2_collision_points[1]):
+            if (self.car1_collision_points[3] >= self.car2_collision_points[2] and self.car1_collision_points[3] <= self.car2_collision_points[3]):
+                print("YAY3")
+                isCollision = True
+        
+        # if car1-maxX is between car2-minX and car2-maxX and car1-minZ is between car2-minZ and car2-maxZ
+        if (self.car1_collision_points[1] >= self.car2_collision_points[0] and self.car1_collision_points[1] <= self.car2_collision_points[1]):
+            if (self.car1_collision_points[2] >= self.car2_collision_points[2] and self.car1_collision_points[2] <= self.car2_collision_points[3]):
+                print("YAY4")
+                isCollision = True
+
+        if not isCollision:
+            print("NO")
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
@@ -187,6 +227,12 @@ class GraphicsProgram3D:
         self.camera2_pos.x = self.car2_pos.x - (self.horizontal_distance * sin(self.total_turn2 * pi/180))
         self.camera2_pos.y = -(self.car2_pos.y + self.vertical_distance)
         self.camera2_pos.z = self.car2_pos.z - (self.horizontal_distance * cos(self.total_turn2 * pi/180))
+
+        # Detect collision between cars
+        if (self.model_matrix_car1 != 0):
+            self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
+            self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
+            self.detectCarCollision()
            
 
     def displayScreen(self):
@@ -218,8 +264,7 @@ class GraphicsProgram3D:
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(0,-2,0)
-        self.model_matrix.add_scale(50,0.5,50)
+        self.model_matrix.add_scale(600,0.5,600)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
@@ -230,27 +275,30 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id05)
         self.shader.set_diffuce_tex(0)
-        self.track.set_vertices(self.shader)
+        self.circle.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(0.5, 0.5, 0.8)
+        self.model_matrix.add_scale(2, 0.5, 4)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.track.draw(self.shader)
+        self.circle.draw(self.shader)
         self.model_matrix.pop_matrix()
 
-
-        # Inner Circle or Track
+        # Inner Circle with grass or smallerTrack
         glActiveTexture(GL_TEXTURE0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.shader.set_diffuce_tex(0)
-        self.innerCircle.set_vertices(self.shader)
+        self.circle.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(0.5, 0.7, 0.8)
+        self.model_matrix.add_scale(1, 0.5, 3)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.innerCircle.draw(self.shader)
+        self.circle.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         glEnable(GL_BLEND)
@@ -264,9 +312,10 @@ class GraphicsProgram3D:
         self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car1_pos.x, 0, self.car1_pos.z)
+        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.model_matrix_car1 = self.model_matrix.matrix
         self.racecar.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -278,9 +327,10 @@ class GraphicsProgram3D:
         self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car2_pos.x, 0, self.car2_pos.z)
+        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.model_matrix_car2 = self.model_matrix.matrix
         self.racecar.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -304,22 +354,22 @@ class GraphicsProgram3D:
 
         pygame.display.flip()
 
-    def goalEntered(self):
-        temp_ang = 0
-        while temp_ang < 2 * pi:
-            x1 = self.view_matrix_1.eye.x + self.collision_radius * cos(temp_ang)
-            y1 = self.view_matrix_1.eye.y
-            z1 = self.view_matrix_1.eye.z + self.collision_radius * sin(temp_ang)
-            x2 = self.view_matrix_2.eye.x + self.collision_radius * cos(temp_ang)
-            y2 = self.view_matrix_2.eye.y
-            z2 = self.view_matrix_2.eye.z + self.collision_radius * sin(temp_ang)
-            temp_ang += (pi * 2)/16
-            point1 = Point(x1, y1, z1) 
-            point2 = Point(x2, y2, z2) 
-            if point1.x >= self.cube_collision_points[0] and point1.x <= self.cube_collision_points[1] or point2.x >= self.cube_collision_points[0] and point2.x <= self.cube_collision_points[1]:
-                    if point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3] or point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3]:
-                        self.view_matrix_1.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
-                        self.view_matrix_2.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
+    # def goalEntered(self):
+    #     temp_ang = 0
+    #     while temp_ang < 2 * pi:
+    #         x1 = self.view_matrix_1.eye.x + self.collision_radius * cos(temp_ang)
+    #         y1 = self.view_matrix_1.eye.y
+    #         z1 = self.view_matrix_1.eye.z + self.collision_radius * sin(temp_ang)
+    #         x2 = self.view_matrix_2.eye.x + self.collision_radius * cos(temp_ang)
+    #         y2 = self.view_matrix_2.eye.y
+    #         z2 = self.view_matrix_2.eye.z + self.collision_radius * sin(temp_ang)
+    #         temp_ang += (pi * 2)/16
+    #         point1 = Point(x1, y1, z1) 
+    #         point2 = Point(x2, y2, z2) 
+    #         if point1.x >= self.cube_collision_points[0] and point1.x <= self.cube_collision_points[1] or point2.x >= self.cube_collision_points[0] and point2.x <= self.cube_collision_points[1]:
+    #                 if point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3] or point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3]:
+    #                     self.view_matrix_1.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
+    #                     self.view_matrix_2.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
 
     def program_loop(self):
         exiting = False

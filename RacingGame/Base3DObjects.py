@@ -160,8 +160,8 @@ class Cube:
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
 
-class Track:
-        def __init__(self, x, y , z,  radius = 10, sides = 19):
+class Circle:
+        def __init__(self, x, y , z,  radius = 15, sides = 19):
             self.fullCircle = 2.2 * pi
             self.vertices = []
             self.miniVertices = []
@@ -181,7 +181,7 @@ class Track:
             for count in range(sides):
                 self.vertices.append(x + ( radius * cos( count *  self.fullCircle / sides )))
                 self.vertices.append(y)
-                self.vertices.append(z + ( radius * sin( count * self.fullCircle / sides )) * 3)
+                self.vertices.append(z + ( radius * sin( count * self.fullCircle / sides )))
                 self.normals.append(0)
                 self.normals.append(1)
                 self.normals.append(0)
@@ -191,43 +191,6 @@ class Track:
 
         def set_vertices(self, shader):
             shader.set_position_attribute(self.vertices)
-            shader.set_normal_attribute(self.normals)
-            shader.set_uv_attribute(self.uv_array)
-
-        def draw(self, shader):
-            glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
-
-
-class innerCircle:
-        def __init__(self, x, y , z,  radius = 5, sides = 19):
-            self.fullCircle = 2.2 * pi
-            self.miniVertices = []
-            self.normals = []
-            self.uv_array = [] 
-
-            self.nrOfVertices = sides + 1
-            self.miniVertices.append(x)
-            self.miniVertices.append(y)
-            self.miniVertices.append(z)
-            self.normals.append(0)
-            self.normals.append(1)
-            self.normals.append(0)
-            self.uv_array.append(0)
-            self.uv_array.append(2)
-            self.uv_array.append(0)
-            for count in range(sides):
-                self.miniVertices.append( + ( radius * cos( count *  self.fullCircle / sides )))
-                self.miniVertices.append(y / 2)
-                self.miniVertices.append(z + ( radius * sin( count *  self.fullCircle / sides )) * 3)
-                self.normals.append(0)
-                self.normals.append(1)
-                self.normals.append(0)
-                self.uv_array.append(0)
-                self.uv_array.append(2)
-                self.uv_array.append(0)
-
-        def set_vertices(self, shader):
-            shader.set_position_attribute(self.miniVertices)
             shader.set_normal_attribute(self.normals)
             shader.set_uv_attribute(self.uv_array)
 
@@ -458,3 +421,22 @@ class Racecar:
         glDrawArrays(GL_TRIANGLE_FAN, 12, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
+    
+    def get_collision_points(self, model_matrix):
+        minPointX = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        maxPointX = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
+
+        if (minPointX > maxPointX):
+            temp = minPointX
+            minPointX = maxPointX 
+            maxPointX = temp
+
+        minPointZ = -0.5 * model_matrix[8] + -0.5 * model_matrix[9] + -0.5 * model_matrix[10] + 1 * model_matrix[11] 
+        maxPointZ = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
+
+        if (minPointZ > maxPointZ):
+            temp = minPointZ
+            minPointZ = maxPointZ 
+            maxPointZ = temp
+
+        return [minPointX, maxPointX, minPointZ, maxPointZ]
