@@ -160,7 +160,42 @@ class Cube:
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
 
-class Circle:
+
+class Cube_2D:
+    def __init__(self):
+        self.position_array = [
+                           #Up
+                            -0.5, 0.5, 0.5,
+                            -0.5, 0.5, -0.5,
+                            0.5, 0.5, -0.5,
+                            0.5, 0.5, 0.5,]
+        self.normal_array = [
+                            #Up
+                            0.0, 1.0, 0.0,
+                            0.0, 1.0, 0.0,
+                            0.0, 1.0, 0.0,
+                            0.0, 1.0, 0.0,]
+        self.uv_array = [
+                        # up
+                        0.0, 0.0,
+                        0.0, 1.0, 
+                        5.0, 1.0, 
+                        5.0, 0.0,]               
+    
+    def set_vertices(self, shader):
+        shader.set_position_attribute(self.position_array)
+        shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
+
+    def draw(self, shader):
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 4, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 8, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 12, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
+        glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
+
+class Circle_2D:
         def __init__(self, x, y , z,  radius = 15, sides = 19):
             self.fullCircle = 2.2 * pi
             self.vertices = []

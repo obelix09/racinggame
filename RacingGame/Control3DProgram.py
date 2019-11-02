@@ -35,8 +35,9 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         self.skybox = Skybox()
-        self.circle = Circle(0, 0, 0)
+        self.circle_2D = Circle_2D(0, 0, 0)
         self.cube = Cube()
+        self.cube_2D = Cube_2D()
         self.racecar = Racecar()
         self.clock = pygame.time.Clock()
         self.clock.tick()
@@ -79,7 +80,7 @@ class GraphicsProgram3D:
         self.total_turn2 = 0
 
         # Camera variables
-        self.distance_from_player = 3
+        self.distance_from_player = 4
         self.camera_pitch = 150 # Degrees
         self.horizontal_distance = self.distance_from_player * cos(self.camera_pitch)
         self.vertical_distance = self.distance_from_player * sin(self.camera_pitch)
@@ -93,6 +94,7 @@ class GraphicsProgram3D:
         self.texture_id06 = self.load_texture("/textures/blue.jpg")
         self.texture_id07 = self.load_texture("/textures/red.jpg")
         self.texture_id08 = self.load_texture("/textures/boarder.jpg")
+        self.texture_id09 = self.load_texture("/textures/goal.jpg")
 
 
     def load_texture(self, path_string):
@@ -229,14 +231,14 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.4, 0.8)
         self.model_matrix.add_scale(2.1, 0.5, 4.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Track
@@ -245,14 +247,30 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id05)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.5, 0.8)
         self.model_matrix.add_scale(2, 0.5, 4)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        # Goal
+        glActiveTexture(GL_TEXTURE0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id09)
+        self.shader.set_diffuce_tex(0)
+        self.cube_2D.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(23.4, 0.4, 0.8)
+        self.model_matrix.add_scale(13.4, 0.5, 1)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.cube_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Inner boarder
@@ -261,14 +279,14 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.6, 0.8)
         self.model_matrix.add_scale(1.1, 0.5, 3.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
         # Inner boarder with grass or smallerTrack
@@ -277,16 +295,15 @@ class GraphicsProgram3D:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.shader.set_diffuce_tex(0)
-        self.circle.set_vertices(self.shader)
+        self.circle_2D.set_vertices(self.shader)
         self.shader.set_material_diffuse(1.0, 1.0, 1.0)
         self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.7, 0.8)
         self.model_matrix.add_scale(1, 0.5, 3)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.circle.draw(self.shader)
+        self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
-
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -299,7 +316,7 @@ class GraphicsProgram3D:
         self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car1_pos.x, 0, self.car1_pos.z)
+        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.racecar.draw(self.shader)
@@ -313,7 +330,7 @@ class GraphicsProgram3D:
         self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car2_pos.x, 0, self.car2_pos.z)
+        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.racecar.draw(self.shader)
