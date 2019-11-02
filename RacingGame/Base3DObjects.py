@@ -456,3 +456,22 @@ class Racecar:
         glDrawArrays(GL_TRIANGLE_FAN, 12, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
+    
+    def get_collision_points(self, model_matrix):
+        minPointX = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        maxPointX = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
+
+        if (minPointX > maxPointX):
+            temp = minPointX
+            minPointX = maxPointX 
+            maxPointX = temp
+
+        minPointZ = -0.5 * model_matrix[8] + -0.5 * model_matrix[9] + -0.5 * model_matrix[10] + 1 * model_matrix[11] 
+        maxPointZ = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
+
+        if (minPointZ > maxPointZ):
+            temp = minPointZ
+            minPointZ = maxPointZ 
+            maxPointZ = temp
+
+        return [Point(minPointX, 0, minPointZ), Point(maxPointX, 0, minPointZ), Point(minPointX, 0, maxPointZ), Point(maxPointX, 0, maxPointZ)]
