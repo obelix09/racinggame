@@ -41,6 +41,11 @@ class GraphicsProgram3D:
         self.max_speed = 20
         self.acceleration = 10
         self.turn_speed = 160
+        
+        # Sound
+        pygame.mixer.init()
+        pygame.mixer.music.load('ghostBusters.mp3')
+        pygame.display.set_caption('Ghostboxters')
 
         self.resetGame()
 
@@ -73,15 +78,11 @@ class GraphicsProgram3D:
         self.texture_id11 = self.load_texture("/textures/yellowLight.jpg")
         self.texture_id12 = self.load_texture("/textures/greenLight.jpg")
 
-        # Sound
-        pygame.mixer.init()
-        pygame.mixer.music.load('ghostBusters.mp3')
-        pygame.mixer.music.play()
-
-        pygame.display.set_caption('Ghostboxters')
 
 
     def resetGame(self):
+        pygame.mixer.music.play()
+
         # Timer
         self.start_ticks = pygame.time.get_ticks()
         # Racecar 1 variables
