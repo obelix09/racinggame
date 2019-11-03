@@ -35,53 +35,14 @@ class GraphicsProgram3D:
         self.cube_2D = Cube_2D()
         self.racecar = Racecar()
         self.clock = pygame.time.Clock()
-        self.start_ticks = pygame.time.get_ticks()
         self.clock.tick()
-
-       # Racecar 1 Movement keys
-        self.W_key_down = False
-        self.S_key_down = False
-        self.A_key_down = False
-        self.D_key_down = False
-
-        # Racecar 2 Movement keys
-        self.UP_key_down = False
-        self.DOWN_key_down = False
-        self.LEFT_key_down = False
-        self.RIGHT_key_down = False
 
         # Shared racecar variables
         self.max_speed = 20
         self.acceleration = 10
         self.turn_speed = 160
 
-        # Racecar 1 variables
-        self.car1_pos = Point(26, 1, 3)
-        self.car1_motion = Vector(0, 0, 0)
-        self.car1_angle = 0
-        self.current_driving_speed1 = 0
-        self.current_turn_speed1 = 0
-        self.total_turn1 = 0
-        self.round1 = 0
-        self.car1_real_motion = Vector(0,0,0)
-        # model matrix for car1
-        self.model_matrix_car1 = 0
-        # Collision coordinates car1
-        self.car1_collision_points = []
-
-        # Racecar 2 variables
-        self.car2_pos = Point(22, 1, 3)
-        self.car2_motion = Vector(0, 0, 0)
-        self.car2_angle = 0
-        self.current_driving_speed2 = 0
-        self.current_turn_speed2 = 0
-        self.total_turn2 = 0
-        self.round2 = 0
-        self.car2_real_motion = Vector(0,0,0)
-        # model matrix for car2
-        self.model_matrix_car2 = 0
-        # Collision coordinates car2
-        self.car2_collision_points = []
+        self.resetGame()
 
         # Collision coordinates outer racetrack circle 
         self.outer_collision_points = []
@@ -112,13 +73,56 @@ class GraphicsProgram3D:
         self.texture_id11 = self.load_texture("/textures/yellowLight.jpg")
         self.texture_id12 = self.load_texture("/textures/greenLight.jpg")
 
-        # Sound effect
+        # Sound
         pygame.mixer.init()
         pygame.mixer.music.load('ghostBusters.mp3')
         pygame.mixer.music.play()
 
         pygame.display.set_caption('Ghostboxters')
 
+
+    def resetGame(self):
+        # Timer
+        self.start_ticks = pygame.time.get_ticks()
+        # Racecar 1 variables
+        self.car1_pos = Point(26, 1, 3)
+        self.car1_motion = Vector(0, 0, 0)
+        self.car1_angle = 0
+        self.current_driving_speed1 = 0
+        self.current_turn_speed1 = 0
+        self.total_turn1 = 0
+        self.round1 = 0
+        self.car1_real_motion = Vector(0,0,0)
+        # model matrix for car1
+        self.model_matrix_car1 = 0
+        # Collision coordinates car1
+        self.car1_collision_points = []
+
+        # Racecar 2 variables
+        self.car2_pos = Point(22, 1, 3)
+        self.car2_motion = Vector(0, 0, 0)
+        self.car2_angle = 0
+        self.current_driving_speed2 = 0
+        self.current_turn_speed2 = 0
+        self.total_turn2 = 0
+        self.round2 = 0
+        self.car2_real_motion = Vector(0,0,0)
+        # model matrix for car2
+        self.model_matrix_car2 = 0
+        # Collision coordinates car2
+        self.car2_collision_points = []
+
+        # Racecar 1 Movement keys
+        self.W_key_down = False
+        self.S_key_down = False
+        self.A_key_down = False
+        self.D_key_down = False
+
+        # Racecar 2 Movement keys
+        self.UP_key_down = False
+        self.DOWN_key_down = False
+        self.LEFT_key_down = False
+        self.RIGHT_key_down = False
 
 
     def load_texture(self, path_string):
@@ -207,13 +211,6 @@ class GraphicsProgram3D:
                     self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car2_pos -= self.car2_motion * delta_time
                     self.car2_pos += self.new_motion * self.current_driving_speed2 * delta_time
-
-                    # self.total_turn2 += self.current_turn_speed2 * delta_time
-                    # distance = self.current_driving_speed2
-
-                    # self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
-                    # self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
-                    # self.car2_pos += self.car2_motion * delta_time
                     break
 
     def detectGoal(self, delta_time):
@@ -225,15 +222,21 @@ class GraphicsProgram3D:
         # check car 1 
         p_hit = goalLine.detect_collision(car1_real_pos, self.car1_real_motion, delta_time)
         if p_hit:
+            print("Racecar 1 collision detection")
             self.round1 += 1
             if (self.round1 == 6): 
                 print("Racecar 1 wins")
+                self.resetGame()
         # Check car 2
         p_hit = goalLine.detect_collision(car2_real_pos, self.car2_real_motion, delta_time)
         if p_hit:
+            print("Racecar 2 collision detection")
             self.round2 += 1
             if (self.round2 == 6): 
                 print("Racecar 2 wins")
+                self.resetGame()
+
+
 
     def update(self):
         self.timer = ((pygame.time.get_ticks() - self.start_ticks) / 1000)
