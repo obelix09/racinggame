@@ -61,6 +61,7 @@ class GraphicsProgram3D:
 
         # Racecar 1 variables
         self.car1_pos = Point(0, 1, 1)
+        self.car1_old_pos = Point(0, 1, 1)
         self.car1_motion = Vector(0, 0, 0)
         self.car1_angle = 0
         self.driving_speed1 = 20
@@ -76,6 +77,7 @@ class GraphicsProgram3D:
 
         # Racecar 2 variables
         self.car2_pos = Point(0, 1, -1)
+        self.car2_old_pos = Point(0, 1, -1)
         self.car2_motion = Vector(0, 0, 0)
         self.car2_angle = 0
         self.driving_speed2 = 20
@@ -120,10 +122,9 @@ class GraphicsProgram3D:
         return tex_id
     
     def detectCarCollision(self, delta_time):
-        # car1_collision = False
         # car2_collision = False
-        car1_real_motion = self.racecar.get_motion_vector(self.car1_motion, self.model_matrix_car1)
-        car2_real_motion = self.racecar.get_motion_vector(self.car2_motion, self.model_matrix_car2)
+        car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+        car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
         # check collision for car1
         for point in self.car1_collision_points:
             lines = []
@@ -132,11 +133,14 @@ class GraphicsProgram3D:
             lines.append(Line(self.car2_collision_points[2], self.car2_collision_points[3]))
             lines.append(Line(self.car2_collision_points[3], self.car2_collision_points[0]))
             for line in lines:
-                unit_vector1 = line.detect_collision(point, car1_real_motion, delta_time)
-                if (unit_vector1 != False):
-                    print("YAY HIT ME1")
+                p_hit = line.detect_collision(point, car1_real_motion, delta_time)
+                if p_hit:
+                    print("YAS1")
+                    self.car1_pos = self.car1_old_pos
+
+                    
         
-        # check collision for car1
+        # check collision for car2
         for point in self.car2_collision_points:
             lines = []
             lines.append(Line(self.car1_collision_points[0], self.car1_collision_points[1]))
@@ -144,9 +148,10 @@ class GraphicsProgram3D:
             lines.append(Line(self.car1_collision_points[2], self.car1_collision_points[3]))
             lines.append(Line(self.car1_collision_points[3], self.car1_collision_points[0]))
             for line in lines:
-                unit_vector2 = line.detect_collision(point, car2_real_motion, delta_time)
-                if (unit_vector2 != False):
-                    print("YAY HIT ME2")
+                p_hit = line.detect_collision(point, car2_real_motion, delta_time)
+                if p_hit:
+                    print("YAS2")
+                    self.car2_pos = self.car2_old_pos
 
 
     def update(self):
@@ -181,12 +186,13 @@ class GraphicsProgram3D:
                 self.current_driving_speed1 += self.driving_speed1 * delta_time
                 
         self.total_turn1 += self.current_turn_speed1 * delta_time
-        distance = self.current_driving_speed1 * delta_time
+        distance = self.current_driving_speed1 
 
+        self.car1_old_pos = self.car1_pos
         self.car1_motion.x = distance * sin(self.total_turn1 * pi/180)
         self.car1_motion.z = distance * cos(self.total_turn1 * pi/180)
-        self.car1_pos.x += self.car1_motion.x 
-        self.car1_pos.z += self.car1_motion.z
+        self.car1_pos.x += self.car1_motion.x * delta_time
+        self.car1_pos.z += self.car1_motion.z * delta_time
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
@@ -222,12 +228,13 @@ class GraphicsProgram3D:
                 self.current_driving_speed2 += self.driving_speed2 * delta_time
                 
         self.total_turn2 += self.current_turn_speed2 * delta_time
-        distance = self.current_driving_speed2 * delta_time
+        distance = self.current_driving_speed2
 
+        self.car2_old_pos = self.car2_pos
         self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
         self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
-        self.car2_pos.x += self.car2_motion.x
-        self.car2_pos.z += self.car2_motion.z
+        self.car2_pos.x += self.car2_motion.x * delta_time
+        self.car2_pos.z += self.car2_motion.z * delta_time
 
         # Calculate camera2 position
         self.camera2_pos.x = self.car2_pos.x - (self.horizontal_distance * sin(self.total_turn2 * pi/180))

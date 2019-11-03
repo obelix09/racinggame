@@ -67,23 +67,22 @@ class Line():
         if (n_c != 0):
             t_hit = (n_b_a / n_c)
             if ((t_hit >= 0) and (t_hit <= delta_time)):
-                print("YAY t-time!")
                 #Calculate position
-                p_hit = Point((point.x + (t_hit * motion.x)), 0, (point.z + (t_hit * motion.z)))
+                p_hit = Point((point.x + (t_hit * motion.x)), point.y, (point.z + (t_hit * motion.z)))
                 if (self.point_1.x == self.point_2.x) :
                     if (self.point_1.z >= self.point_2.z):
                         if ((p_hit.z >= self.point_2.z) and (p_hit.z <= self.point_1.z)):
-                            return self.unit_vector
+                            return p_hit
                     else:
                         if ((p_hit.z <= self.point_2.z) and (p_hit.z >= self.point_1.z)):
-                            return self.unit_vector
+                            return p_hit
                 else :
                     if (self.point_1.x >= self.point_2.x):
                         if ((p_hit.x >= self.point_2.x) and (p_hit.x <= self.point_1.x)):
-                            return self.unit_vector
+                            return p_hit
                     else :
                         if ((p_hit.x <= self.point_2.x) and (p_hit.x >= self.point_1.x)):
-                            return self.unit_vector
+                            return p_hit
         return False
 
 class Cube:
@@ -503,8 +502,14 @@ class Racecar:
 
         return [Point(pointX1 , 0, pointZ1), Point(pointX2 , 0, pointZ2), Point(pointX3 , 0, pointZ3), Point(pointX4 , 0, pointZ4)]
 
-    def get_motion_vector(self, motion, model_matrix):
-        vectorX1 = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] + 0 * model_matrix[3]
-        vectorZ1 = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] + 0 * model_matrix[11]
+    def get_global_vector(self, motion, model_matrix):
+        vectorX = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] + 0 * model_matrix[3]
+        vectorZ = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] + 0 * model_matrix[11]
 
-        return Vector(vectorX1, 0, vectorZ1)
+        return Vector(vectorX, 0, vectorZ)
+
+    def get_local_point(self, point, model_matrix):
+        pointX = point.x / (model_matrix[0] + model_matrix[1] + model_matrix[2] + model_matrix[3])
+        pointZ = point.z / (model_matrix[8] + model_matrix[9] + model_matrix[10] + model_matrix[11])
+
+        return Point(pointX, point.y, pointZ)
