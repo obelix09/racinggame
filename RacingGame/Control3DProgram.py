@@ -16,7 +16,7 @@ class GraphicsProgram3D:
     def __init__(self):
 
         pygame.init() 
-        pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
 
         self.shader = Shader3D()
         self.shader.use()
@@ -35,6 +35,7 @@ class GraphicsProgram3D:
         self.cube_2D = Cube_2D()
         self.racecar = Racecar()
         self.clock = pygame.time.Clock()
+        self.start_ticks = pygame.time.get_ticks()
         self.clock.tick()
 
        # Racecar 1 Movement keys
@@ -109,11 +110,17 @@ class GraphicsProgram3D:
         self.texture_id07 = self.load_texture("/textures/red.jpg")
         self.texture_id08 = self.load_texture("/textures/boarder.jpg")
         self.texture_id09 = self.load_texture("/textures/goal.jpg")
+        self.texture_id10 = self.load_texture("/textures/redLight.jpg")
+        self.texture_id11 = self.load_texture("/textures/yellowLight.jpg")
+        self.texture_id12 = self.load_texture("/textures/greenLight.jpg")
 
         # Sound effect
         pygame.mixer.init()
         pygame.mixer.music.load('ghostBusters.mp3')
         pygame.mixer.music.play()
+
+        pygame.display.set_caption('Ghostboxters')
+
 
 
     def load_texture(self, path_string):
@@ -217,6 +224,7 @@ class GraphicsProgram3D:
                 print("Racecar 2 wins")
 
     def update(self):
+        self.timer = ((pygame.time.get_ticks() - self.start_ticks) / 1000)
         delta_time = self.clock.tick() / 1000.0
         
         ########### Car controls 1 ############
@@ -318,11 +326,13 @@ class GraphicsProgram3D:
         self.camera2_pos.z = self.car2_pos.z - (self.horizontal_distance * cos(self.total_turn2 * pi/180))
 
     def displayScreen(self):
+
         # Setting up the light positions:
         # Every object has the same specular and ambient for their material
         self.shader.set_light_ambient(0.3, 0.3, 0.3)
         self.shader.set_material_ambient(0.3, 0.3, 0.3)
-        self.shader.set_material_specular(0.4, 0.4, 0.4)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.shader.set_material_shininess(15)
 
         # Light 1 (Racer 1):
@@ -347,8 +357,6 @@ class GraphicsProgram3D:
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture_id01)
         self.shader.set_diffuce_tex(0)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_scale(600,600,600)
         self.shader.set_model_matrix(self.model_matrix.matrix)
@@ -362,8 +370,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.shader.set_diffuce_tex(0)
         self.cube.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_scale(600,0.5,600)
         self.shader.set_model_matrix(self.model_matrix.matrix)
@@ -377,8 +383,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
         self.circle_2D.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.4, 0.8)
         self.model_matrix.add_scale(2.1, 0.5, 4.1)
@@ -395,8 +399,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id05)
         self.shader.set_diffuce_tex(0)
         self.circle_2D.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.5, 0.8)
         self.model_matrix.add_scale(2, 0.5, 4)
@@ -411,8 +413,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id09)
         self.shader.set_diffuce_tex(0)
         self.cube_2D.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(23.4, 0.4, 0.8)
         self.model_matrix.add_scale(13.4, 0.5, 1)
@@ -429,8 +429,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
         self.circle_2D.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.6, 0.8)
         self.model_matrix.add_scale(1.1, 0.5, 3.1)
@@ -447,8 +445,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.shader.set_diffuce_tex(0)
         self.circle_2D.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
-        self.shader.set_material_specular(0.0, 0.0, 0.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.7, 0.8)
         self.model_matrix.add_scale(1, 0.5, 3)
@@ -459,13 +455,15 @@ class GraphicsProgram3D:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         
+        # Racecars
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
+        self.shader.set_material_specular(1.0, 1.0, 1.0)
+
         # Racecar 1
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture_id06)
         self.shader.set_diffuce_tex(0)
         self.racecar.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
@@ -479,8 +477,6 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D, self.texture_id07)
         self.shader.set_diffuce_tex(0)
         self.racecar.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
         self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
@@ -488,6 +484,27 @@ class GraphicsProgram3D:
         self.model_matrix_car2 = self.model_matrix.matrix
         self.racecar.draw(self.shader)
         self.model_matrix.pop_matrix()
+
+
+        # Popup
+        if(self.timer < 8):
+            getReadyTexture = self.texture_id10
+        elif(8 < self.timer and self.timer < 13):
+            getReadyTexture = self.texture_id11
+        else:
+            getReadyTexture = self.texture_id12
+
+        if (self.timer < 15):
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, getReadyTexture)
+            self.shader.set_diffuce_tex(0)
+            self.cube.set_vertices(self.shader)
+            self.model_matrix.push_matrix()
+            self.model_matrix.add_translation(23.4, 1, 6)
+            self.model_matrix.add_scale(8, 5, 1)
+            self.shader.set_model_matrix(self.model_matrix.matrix)
+            self.cube.draw(self.shader)
+            self.model_matrix.pop_matrix()
 
         glDisable(GL_BLEND)
 
