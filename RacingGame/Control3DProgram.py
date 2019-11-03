@@ -130,23 +130,23 @@ class GraphicsProgram3D:
         length = len(self.outer_collision_points)
         for i in range(length):
             if (i == length-1):
-                line = Line(self.outer_collision_points[i], self.outer_collision_points[1])
+                line = Line(self.outer_collision_points[i], self.outer_collision_points[0])
             else:
                 line = Line(self.outer_collision_points[i], self.outer_collision_points[i+1])
             for point in self.car1_collision_points: 
                 p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
-                    print("YAS1-outer")
-                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car1_pos -= self.car1_motion * delta_time
-                    self.car1_pos += self.new_motion * delta_time
+                    self.car1_pos += self.new_motion * delta_time * self.current_driving_speed1
+                    break
             for point in self.car2_collision_points: 
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
-                    print("YAS2-outer")
-                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car2_pos -= self.car2_motion * delta_time
-                    self.car2_pos += self.new_motion * delta_time
+                    self.car2_pos += self.new_motion * self.current_driving_speed2 * delta_time
+                    break
 
         
         length = len(self.inner_collision_points)
@@ -158,17 +158,17 @@ class GraphicsProgram3D:
             for point in self.car1_collision_points: 
                 p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
-                    print("YAS1-inner")
-                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car1_pos -= self.car1_motion * delta_time
-                    self.car1_pos += self.new_motion * delta_time
+                    self.car1_pos += self.new_motion * delta_time * self.current_driving_speed1
+                    break
             for point in self.car2_collision_points: 
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
-                    print("YAS2-inner")
-                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car2_pos -= self.car2_motion * delta_time
-                    self.car2_pos += self.new_motion * delta_time
+                    self.car2_pos += self.new_motion * self.current_driving_speed2 * delta_time
+                    break
 
 
     def detectCarCollision(self, delta_time):
@@ -182,10 +182,10 @@ class GraphicsProgram3D:
             for line in lines:
                 p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
-                    print("YAS1")
-                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car1_pos -= self.car1_motion * delta_time
-                    self.car1_pos += self.new_motion * delta_time
+                    self.car1_pos += self.new_motion * delta_time * self.current_driving_speed1
+                    break
         
         # check collision for car2
         for point in self.car2_collision_points:
@@ -197,10 +197,17 @@ class GraphicsProgram3D:
             for line in lines:
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
-                    print("YAS2")
-                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car2_pos -= self.car2_motion * delta_time
-                    self.car2_pos += self.new_motion * delta_time
+                    self.car2_pos += self.new_motion * self.current_driving_speed2 * delta_time
+
+                    # self.total_turn2 += self.current_turn_speed2 * delta_time
+                    # distance = self.current_driving_speed2
+
+                    # self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
+                    # self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
+                    # self.car2_pos += self.car2_motion * delta_time
+                    break
 
     def detectGoal(self, delta_time):
         car1_real_pos = self.racecar.get_global_vector(self.car1_pos, self.model_matrix_car1)
@@ -292,23 +299,22 @@ class GraphicsProgram3D:
         self.total_turn2 += self.current_turn_speed2 * delta_time
         distance = self.current_driving_speed2
 
-        self.car2_old_pos = self.car2_pos
         self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
         self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
         self.car2_pos += self.car2_motion * delta_time
-
-        # Detect collision between cars
-        if (self.model_matrix_car1 != 0):
-            self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
-            self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
-            self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
-            self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
-            self.detectCarCollision(delta_time) 
-        
-        # Detect collision on racetrack boarders
-        if (self.outer_collision_points != []):
-            self.detectBorderCollision(delta_time)
-            self.detectGoal(delta_time)
+        if (self.model_matrix_car1 != 0 and self.model_matrix_car2 != 0):
+            # Detect collision between cars
+            if (self.model_matrix_car1 != 0):
+                self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+                self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
+                self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
+                self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
+                self.detectCarCollision(delta_time) 
+            
+            # Detect collision on racetrack boarders
+            if (self.outer_collision_points != [] and self.inner_collision_points != [] and self.goal_collision_points != []):
+                self.detectBorderCollision(delta_time)
+                self.detectGoal(delta_time)
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
@@ -344,6 +350,40 @@ class GraphicsProgram3D:
         self.shader.set_light_3_specular(1.0, 1.0, 1.0)
         
         self.model_matrix.load_identity()
+
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        
+        # Racecar 1
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
+        self.shader.set_diffuce_tex(0)
+        self.racecar.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
+        self.shader.set_material_specular(1.0, 1.0, 1.0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
+        self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.model_matrix_car1 = self.model_matrix.matrix
+        self.racecar.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        # Racecar 2
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id07)
+        self.shader.set_diffuce_tex(0)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
+        self.shader.set_material_specular(1.0, 1.0, 1.0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
+        self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.model_matrix_car2 = self.model_matrix.matrix
+        self.racecar.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        glDisable(GL_BLEND)
 
         #Skybox
         self.skybox.set_vertices(self.shader)
@@ -458,41 +498,6 @@ class GraphicsProgram3D:
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
-
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
-        # Racecar 1
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
-        self.shader.set_diffuce_tex(0)
-        self.racecar.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
-        self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.model_matrix_car1 = self.model_matrix.matrix
-        self.racecar.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
-        # Racecar 2
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id07)
-        self.shader.set_diffuce_tex(0)
-        self.racecar.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
-        self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.model_matrix_car2 = self.model_matrix.matrix
-        self.racecar.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
-        glDisable(GL_BLEND)
 
     def display(self):
         glEnable(GL_DEPTH_TEST)
