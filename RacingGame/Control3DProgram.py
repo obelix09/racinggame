@@ -138,7 +138,7 @@ class GraphicsProgram3D:
         length = len(self.outer_collision_points)
         for i in range(length):
             if (i == length-1):
-                line = Line(self.outer_collision_points[i], self.outer_collision_points[0])
+                line = Line(self.outer_collision_points[i], self.outer_collision_points[1])
             else:
                 line = Line(self.outer_collision_points[i], self.outer_collision_points[i+1])
             for point in self.car1_collision_points: 
@@ -153,7 +153,7 @@ class GraphicsProgram3D:
         length = len(self.inner_collision_points)
         for i in range(length):
             if (i == length-1):
-                line = Line(self.inner_collision_points[i], self.inner_collision_points[0])
+                line = Line(self.inner_collision_points[i], self.inner_collision_points[1])
             else:
                 line = Line(self.inner_collision_points[i], self.inner_collision_points[i+1])
             for point in self.car1_collision_points: 

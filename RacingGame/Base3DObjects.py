@@ -267,7 +267,8 @@ class Circle_2D:
         
         def get_collision_points(self, model_matrix):
             collision_points = []
-            for i in range(len(self.vertices))[::3]:
+            # skip middle point
+            for i in range(3, len(self.vertices))[::3]:
                  #first point
                 pointX = self.vertices[i] * model_matrix[0] + self.vertices[i] * model_matrix[1] + self.vertices[i] * model_matrix[2] + 1 * model_matrix[3] 
                 pointZ = self.vertices[i+2] * model_matrix[8] + self.vertices[i+2] * model_matrix[9] + self.vertices[i+2] * model_matrix[10] + 1 * model_matrix[11] 
