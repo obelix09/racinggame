@@ -122,7 +122,7 @@ class Shader3D:
         glUniform4f(self.light3SpecularLoc, red, green, blue, 1.0)
     
     def set_material_diffuse(self, red, green, blue, alpha=1.0):
-        glUniform4f(self.materialDiffuseLoc, red, green, blue, 1.0)
+        glUniform4f(self.materialDiffuseLoc, red, green, blue, alpha)
     
     def set_material_shininess(self, shininess):
         glUniform1f(self.materialShininessLoc, shininess)

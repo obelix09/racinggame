@@ -14,7 +14,6 @@ from Matrices import *
 
 class GraphicsProgram3D:
     def __init__(self):
-
         pygame.init() 
         self.screen = pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
 
@@ -44,10 +43,8 @@ class GraphicsProgram3D:
         
         # Sound
         pygame.mixer.init()
-        pygame.mixer.music.load('ghostBusters.mp3')
+        pygame.mixer.music.load(sys.path[0] + "/sounds/ghostBusters.mp3")
         pygame.display.set_caption('Ghostboxters')
-
-        self.resetGame()
 
         # Collision coordinates outer racetrack circle 
         self.outer_collision_points = []
@@ -57,6 +54,9 @@ class GraphicsProgram3D:
 
         # model matrix
         self.goal_collision_points = []
+
+        # Goal line
+        self.goal_line = 0
 
         # Camera variables
         self.distance_from_player = 5
@@ -78,13 +78,13 @@ class GraphicsProgram3D:
         self.texture_id11 = self.load_texture("/textures/yellowLight.jpg")
         self.texture_id12 = self.load_texture("/textures/greenLight.jpg")
 
-
+        self.resetGame()
 
     def resetGame(self):
         pygame.mixer.music.play()
-
         # Timer
         self.start_ticks = pygame.time.get_ticks()
+        self.endTime = 0
         # Racecar 1 variables
         self.car1_pos = Point(26, 1, 3)
         self.car1_motion = Vector(0, 0, 0)
@@ -150,7 +150,7 @@ class GraphicsProgram3D:
                 if p_hit:
                     self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car1_pos -= self.car1_motion * delta_time
-                    self.car1_pos += self.new_motion * delta_time * self.current_driving_speed1
+                    self.car1_pos += self.new_motion * self.current_driving_speed1 * delta_time
                     break
             for point in self.car2_collision_points: 
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
@@ -172,7 +172,7 @@ class GraphicsProgram3D:
                 if p_hit:
                     self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z) * delta_time
                     self.car1_pos -= self.car1_motion * delta_time
-                    self.car1_pos += self.new_motion * delta_time * self.current_driving_speed1
+                    self.car1_pos += self.new_motion * self.current_driving_speed1 * delta_time
                     break
             for point in self.car2_collision_points: 
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
@@ -215,34 +215,35 @@ class GraphicsProgram3D:
                     break
 
     def detectGoal(self, delta_time):
-        car1_real_pos = self.racecar.get_global_vector(self.car1_pos, self.model_matrix_car1)
-        car2_real_pos = self.racecar.get_global_vector(self.car2_pos, self.model_matrix_car1)
+        car1_real_pos = self.racecar.get_global_point(self.car1_pos, self.model_matrix_car1)
+        car2_real_pos = self.racecar.get_global_point(self.car2_pos, self.model_matrix_car2)
 
-        # check goal collision
-        goalLine = Line(self.goal_collision_points[0], self.goal_collision_points[1])
         # check car 1 
-        p_hit = goalLine.detect_collision(car1_real_pos, self.car1_real_motion, delta_time)
+        p_hit = self.goal_line.detect_collision(car1_real_pos, self.car1_real_motion, delta_time)
         if p_hit:
             print("Racecar 1 collision detection")
             self.round1 += 1
-            if (self.round1 == 6): 
+            if (self.round1 == 3): 
                 print("Racecar 1 wins")
-                self.resetGame()
+                self.endTime = self.timer + 5
         # Check car 2
-        p_hit = goalLine.detect_collision(car2_real_pos, self.car2_real_motion, delta_time)
+        p_hit = self.goal_line.detect_collision(car2_real_pos, self.car2_real_motion, delta_time)
         if p_hit:
             print("Racecar 2 collision detection")
             self.round2 += 1
-            if (self.round2 == 6): 
+            if (self.round2 == 3): 
                 print("Racecar 2 wins")
-                self.resetGame()
-
+                self.endTime = self.timer + 5
 
 
     def update(self):
         self.timer = ((pygame.time.get_ticks() - self.start_ticks) / 1000)
         delta_time = self.clock.tick() / 1000.0
-        
+
+        # Check if game has ended (someone won)
+        if (self.endTime != 0 and self.timer >= self.endTime):
+            self.resetGame()
+
         if(13 < self.timer):
             ########### Car controls 1 ############
             #go left or right
@@ -315,17 +316,16 @@ class GraphicsProgram3D:
             self.car2_pos += self.car2_motion * delta_time
             if (self.model_matrix_car1 != 0 and self.model_matrix_car2 != 0):
                 # Detect collision between cars
-                if (self.model_matrix_car1 != 0):
-                    self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
-                    self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
-                    self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
-                    self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
-                    self.detectCarCollision(delta_time) 
-                
+                self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+                self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
+                self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
+                self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
+                self.detectCarCollision(delta_time) 
+            
                 # Detect collision on racetrack boarders
-                if (self.outer_collision_points != [] and self.inner_collision_points != [] and self.goal_collision_points != []):
-                    self.detectBorderCollision(delta_time)
-                    self.detectGoal(delta_time)
+                self.detectBorderCollision(delta_time)
+                # Detect goal collision
+                self.detectGoal(delta_time)
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
@@ -364,40 +364,6 @@ class GraphicsProgram3D:
         
         self.model_matrix.load_identity()
 
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
-        # Racecar 1
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
-        self.shader.set_diffuce_tex(0)
-        self.racecar.set_vertices(self.shader)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
-        self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.model_matrix_car1 = self.model_matrix.matrix
-        self.racecar.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
-        # Racecar 2
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id07)
-        self.shader.set_diffuce_tex(0)
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
-        self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.model_matrix_car2 = self.model_matrix.matrix
-        self.racecar.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
-        glDisable(GL_BLEND)
-
         #Skybox
         self.skybox.set_vertices(self.shader)
         glActiveTexture(GL_TEXTURE0)
@@ -417,18 +383,16 @@ class GraphicsProgram3D:
         self.shader.set_diffuce_tex(0)
         self.cube.set_vertices(self.shader)
         self.model_matrix.push_matrix()
-        self.model_matrix.add_scale(600,0.5,600)
+        self.model_matrix.add_scale(400,0.5,400)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        self.circle_2D.set_vertices(self.shader)
         # Outer boarder
         glActiveTexture(GL_TEXTURE0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
-        self.circle_2D.set_vertices(self.shader)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.4, 0.8)
         self.model_matrix.add_scale(2.1, 0.5, 4.1)
@@ -440,11 +404,8 @@ class GraphicsProgram3D:
 
         # Track
         glActiveTexture(GL_TEXTURE0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id05)
         self.shader.set_diffuce_tex(0)
-        self.circle_2D.set_vertices(self.shader)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.5, 0.8)
         self.model_matrix.add_scale(2, 0.5, 4)
@@ -452,29 +413,10 @@ class GraphicsProgram3D:
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
-        # Goal
-        glActiveTexture(GL_TEXTURE0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id09)
-        self.shader.set_diffuce_tex(0)
-        self.cube_2D.set_vertices(self.shader)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(23.4, 0.4, 0.8)
-        self.model_matrix.add_scale(13.4, 0.5, 1)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        if (self.goal_collision_points == []):
-            self.goal_collision_points = self.cube_2D.get_collision_points(self.model_matrix.matrix)
-        self.cube_2D.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
         # Inner boarder
         glActiveTexture(GL_TEXTURE0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id08)
         self.shader.set_diffuce_tex(0)
-        self.circle_2D.set_vertices(self.shader)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.6, 0.8)
         self.model_matrix.add_scale(1.1, 0.5, 3.1)
@@ -486,11 +428,8 @@ class GraphicsProgram3D:
 
         # Inner boarder with grass 
         glActiveTexture(GL_TEXTURE0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glBindTexture(GL_TEXTURE_2D, self.texture_id03)
         self.shader.set_diffuce_tex(0)
-        self.circle_2D.set_vertices(self.shader)
         self.model_matrix.push_matrix()
         self.model_matrix.add_translation(0.5, 0.7, 0.8)
         self.model_matrix.add_scale(1, 0.5, 3)
@@ -498,30 +437,75 @@ class GraphicsProgram3D:
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
+        # Goal
+        glActiveTexture(GL_TEXTURE0)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id09)
+        self.shader.set_diffuce_tex(0)
+        self.cube_2D.set_vertices(self.shader)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(23.4, 0.4, 0.8)
+        self.model_matrix.add_scale(13.4, 0.5, 1)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        if (self.goal_line == 0):
+            goal_collision_points = self.cube_2D.get_collision_points(self.model_matrix.matrix)
+            self.goal_line = Line(goal_collision_points[0], goal_collision_points[1])
+        self.cube_2D.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        #Racecars
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0)
+        self.shader.set_material_specular(1.0, 1.0, 1.0)
+        self.racecar.set_vertices(self.shader)
+
+        # Racecar 1
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
+        self.shader.set_diffuce_tex(0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
+        self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.model_matrix_car1 = self.model_matrix.matrix
+        self.racecar.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        # Racecar 2
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.texture_id07)
+        self.shader.set_diffuce_tex(0)
+        self.model_matrix.push_matrix()
+        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
+        self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.model_matrix_car2 = self.model_matrix.matrix
+        self.racecar.draw(self.shader)
+        self.model_matrix.pop_matrix()
+
+        # Popup start light
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-        # Popup
+        self.cube.set_vertices(self.shader)
+        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
         if(self.timer < 8):
             getReadyTexture = self.texture_id10
         elif(8 < self.timer and self.timer < 13):
             getReadyTexture = self.texture_id11
         else:
             getReadyTexture = self.texture_id12
-
         if (self.timer < 15):
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, getReadyTexture)
             self.shader.set_diffuce_tex(0)
-            self.cube.set_vertices(self.shader)
             self.model_matrix.push_matrix()
             self.model_matrix.add_translation(23.4, 1, 6)
-            self.model_matrix.add_scale(8, 5, 1)
+            self.model_matrix.add_scale(10, 5, 2)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.cube.draw(self.shader)
             self.model_matrix.pop_matrix()
 
         glDisable(GL_BLEND)
+
 
     def display(self):
         glEnable(GL_DEPTH_TEST)

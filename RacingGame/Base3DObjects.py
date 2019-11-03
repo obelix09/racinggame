@@ -167,9 +167,9 @@ class Cube:
                         1.0, 0.0,
                         # up
                         0.0, 0.0,
-                        0.0, 5.0, 
-                        5.0, 5.0, 
-                        5.0, 0.0,
+                        0.0, 50.0, 
+                        50.0, 50.0, 
+                        50.0, 0.0,
                         # left
                         0.0, 0.0,
                         0.0, 1.0, 
@@ -234,23 +234,17 @@ class Cube_2D:
         pointX1 = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
         pointZ1 = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
 
-        #third point
+        #second point
         pointX2 = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
         pointZ2 = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11]  
 
-        return [Point(pointX1 , 0, pointZ1), Point(pointX2 , 0, pointZ2)]
+        return [Point(pointX1 , 0, pointZ1), Point(pointX2 , 0, pointZ1)]
 
     def get_global_vector(self, motion, model_matrix):
         vectorX = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] + 0 * model_matrix[3]
         vectorZ = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] + 0 * model_matrix[11]
 
         return Vector(vectorX, 0, vectorZ)
-
-    def get_global_point(self, point, model_matrix):
-        pointX = 1 * model_matrix[3]
-        pointZ = 1 * model_matrix[11]
-
-        return Point(pointX, 0, pointZ)
 
 class Circle_2D:
         def __init__(self, x, y , z,  radius = 15, sides = 19):
@@ -537,13 +531,13 @@ class Racecar:
         return [Point(pointX1 , 0, pointZ1), Point(pointX2 , 0, pointZ2), Point(pointX3 , 0, pointZ3), Point(pointX4 , 0, pointZ4)]
 
     def get_global_vector(self, motion, model_matrix):
-        vectorX = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] + 0 * model_matrix[3]
-        vectorZ = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] + 0 * model_matrix[11]
+        vectorX = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] 
+        vectorZ = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] 
 
         return Vector(vectorX, 0, vectorZ)
 
-    def get_local_point(self, point, model_matrix):
-        pointX = point.x / (model_matrix[0] + model_matrix[1] + model_matrix[2] + model_matrix[3])
-        pointZ = point.z / (model_matrix[8] + model_matrix[9] + model_matrix[10] + model_matrix[11])
+    def get_global_point(self, point, model_matrix):
+        pointX = 1 * model_matrix[3]
+        pointZ = 1 * model_matrix[11]
 
-        return Point(pointX, point.y, pointZ)
+        return Point(pointX, 0, pointZ)
