@@ -42,9 +42,9 @@ class GraphicsProgram3D:
         self.turn_speed = 160
         
         # Sound
-        pygame.mixer.init()
-        pygame.mixer.music.load(sys.path[0] + "/sounds/ghostBusters.mp3")
-        pygame.display.set_caption('Ghostboxters')
+        # pygame.mixer.music.play()
+        pygame.mixer.music.load('./sounds/ghostBusters.mp3')
+        # pygame.display.set_caption('Ghostboxters')
 
         # Collision coordinates outer racetrack circle 
         self.outer_collision_points = []
@@ -81,6 +81,7 @@ class GraphicsProgram3D:
         self.resetGame()
 
     def resetGame(self):
+        pygame.mixer.music.load(sys.path[0] + '/sounds/ghostBusters.mp3')
         pygame.mixer.music.play()
         # Timer
         self.start_ticks = pygame.time.get_ticks()
@@ -224,14 +225,19 @@ class GraphicsProgram3D:
             print("Racecar 1 collision detection")
             self.round1 += 1
             if (self.round1 == 3): 
+                pygame.mixer.music.load(sys.path[0] + '/sounds/winner.mp3')
+                pygame.mixer.music.play()
                 print("Racecar 1 wins")
                 self.endTime = self.timer + 5
+                
         # Check car 2
         p_hit = self.goal_line.detect_collision(car2_real_pos, self.car2_real_motion, delta_time)
         if p_hit:
             print("Racecar 2 collision detection")
             self.round2 += 1
             if (self.round2 == 3): 
+                pygame.mixer.music.load(sys.path[0] + '/sounds/winner.mp3')
+                pygame.mixer.music.play()
                 print("Racecar 2 wins")
                 self.endTime = self.timer + 5
 
