@@ -22,13 +22,8 @@ class GraphicsProgram3D:
         self.shader.use()
 
         self.model_matrix = ModelMatrix()
-        self.collision_radius = 0.5
-
         self.view_matrix_1 = ViewMatrix()
         self.view_matrix_2 = ViewMatrix()
-        # Cam position - looking at - upVector
-        self.view_matrix_1.look(Point(0, 1, 3), Point(0, 0, 0), Vector(0, 1, 0))
-        self.view_matrix_2.look(Point(3, 1, 0), Point(0, 0, 0), Vector(0, 1, 0))
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(pi/3, 800/300, 0.5, 500)
@@ -42,64 +37,61 @@ class GraphicsProgram3D:
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
-        self.angle = 0
-
-       # Movement keys
+       # Racecar 1 Movement keys
         self.W_key_down = False
         self.S_key_down = False
         self.A_key_down = False
         self.D_key_down = False
 
-        # Rotation keys (pitch & yaw)
+        # Racecar 2 Movement keys
         self.UP_key_down = False
         self.DOWN_key_down = False
         self.LEFT_key_down = False
         self.RIGHT_key_down = False
 
-        # Max speed 
+        # Shared racecar variables
         self.max_speed = 20
+        self.acceleration = 10
+        self.turn_speed = 160
 
         # Racecar 1 variables
-        self.car1_pos = Point(0, 1, 1)
+        self.car1_pos = Point(26, 1, 3)
         self.car1_old_pos = Point(0, 1, 1)
         self.car1_motion = Vector(0, 0, 0)
         self.car1_angle = 0
-        self.driving_speed1 = 20
-        self.turn_speed1 = 160
         self.current_driving_speed1 = 0
         self.current_turn_speed1 = 0
         self.total_turn1 = 0
-
+        self.round1 = 0
+        self.car1_real_motion = Vector(0,0,0)
+        self.car2_real_motion = Vector(0,0,0)
         # model matrix for car1
         self.model_matrix_car1 = 0
         # Collision coordinates car1
         self.car1_collision_points = []
 
         # Racecar 2 variables
-        self.car2_pos = Point(0, 1, -1)
+        self.car2_pos = Point(22, 1, 3)
         self.car2_old_pos = Point(0, 1, -1)
         self.car2_motion = Vector(0, 0, 0)
         self.car2_angle = 0
-        self.driving_speed2 = 20
-        self.turn_speed2 = 160
         self.current_driving_speed2 = 0
         self.current_turn_speed2 = 0
         self.total_turn2 = 0
-
+        self.round2 = 0
         # model matrix for car2
         self.model_matrix_car2 = 0
         # Collision coordinates car2
         self.car2_collision_points = []
 
-        # model matrix for outer racetrack circle 
-        self.model_matrix_outer_circle = 0
         # Collision coordinates outer racetrack circle 
-        self.outer_circle_collision_points = []
+        self.outer_collision_points = []
 
-        # model matrix for inner racetrack circle 
-        self.model_matrix_inner_circle = 0
         # Collision coordinates inner racetrack circle 
-        self.inner_circle_collision_points = []
+        self.inner_collision_points = []
+
+        # model matrix
+        self.goal_collision_points = []
 
         # Camera variables
         self.distance_from_player = 5
@@ -132,9 +124,6 @@ class GraphicsProgram3D:
         return tex_id
     
     def detectBorderCollision(self, delta_time):
-        car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
-        car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
-
         length = len(self.outer_collision_points)
         for i in range(length):
             if (i == length-1):
@@ -142,13 +131,15 @@ class GraphicsProgram3D:
             else:
                 line = Line(self.outer_collision_points[i], self.outer_collision_points[i+1])
             for point in self.car1_collision_points: 
-                p_hit = line.detect_collision(point, car1_real_motion, delta_time)
+                p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
                     print("YAS1-outer")
+                    break
             for point in self.car2_collision_points: 
-                p_hit = line.detect_collision(point, car2_real_motion, delta_time)
+                p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
                     print("YAS2-outer")
+                    break
         
         length = len(self.inner_collision_points)
         for i in range(length):
@@ -157,13 +148,15 @@ class GraphicsProgram3D:
             else:
                 line = Line(self.inner_collision_points[i], self.inner_collision_points[i+1])
             for point in self.car1_collision_points: 
-                p_hit = line.detect_collision(point, car1_real_motion, delta_time)
+                p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
                     print("YAS1-inner")
+                    break
             for point in self.car2_collision_points: 
-                p_hit = line.detect_collision(point, car2_real_motion, delta_time)
+                p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
                     print("YAS2-inner")
+                    break
 
 
     def detectCarCollision(self, delta_time):
@@ -177,10 +170,10 @@ class GraphicsProgram3D:
             lines.append(Line(self.car2_collision_points[2], self.car2_collision_points[3]))
             lines.append(Line(self.car2_collision_points[3], self.car2_collision_points[0]))
             for line in lines:
-                p_hit = line.detect_collision(point, car1_real_motion, delta_time)
+                p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
                     print("YAS1")
-                    self.car1_pos = self.car1_old_pos
+                    break
         
         # check collision for car2
         for point in self.car2_collision_points:
@@ -190,11 +183,33 @@ class GraphicsProgram3D:
             lines.append(Line(self.car1_collision_points[2], self.car1_collision_points[3]))
             lines.append(Line(self.car1_collision_points[3], self.car1_collision_points[0]))
             for line in lines:
-                p_hit = line.detect_collision(point, car2_real_motion, delta_time)
+                p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
                     print("YAS2")
-                    self.car2_pos = self.car2_old_pos
+                    break
 
+    def detectGoal(self, delta_time):
+        car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+        car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
+        car1_real_pos = self.racecar.get_global_vector(self.car1_pos, self.model_matrix_car1)
+        car2_real_pos = self.racecar.get_global_vector(self.car2_pos, self.model_matrix_car1)
+
+        # check goal collision
+        goalLine = Line(self.goal_collision_points[0], self.goal_collision_points[1])
+        # check car 1 
+        p_hit = goalLine.detect_collision(car1_real_pos, self.car1_real_motion, delta_time)
+        if p_hit:
+            print("YAS1")
+            self.round1 += 1
+            if (self.round1 == 3): 
+                print("Racecar 1 wins")
+        # Check car 2
+        p_hit = goalLine.detect_collision(car2_real_pos, self.car2_real_motion, delta_time)
+        if p_hit:
+            print("YAS2")
+            self.round2 += 1
+            if (self.round2 == 3): 
+                print("Racecar 2 wins")
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
@@ -203,29 +218,29 @@ class GraphicsProgram3D:
         #go left or right
         if (self.LEFT_key_down):
             if(self.current_driving_speed1 > 0):
-                self.current_turn_speed1 = self.turn_speed1 * self.current_driving_speed1/20
+                self.current_turn_speed1 = self.turn_speed * self.current_driving_speed1/20
             elif(self.current_driving_speed1 < 0):
-                self.current_turn_speed1 = self.turn_speed1 * self.current_driving_speed1/20 
+                self.current_turn_speed1 = self.turn_speed * self.current_driving_speed1/20 
         elif (self.RIGHT_key_down):
             if(self.current_driving_speed1 > 0):
-                self.current_turn_speed1 = -self.turn_speed1 * self.current_driving_speed1/20 
+                self.current_turn_speed1 = -self.turn_speed * self.current_driving_speed1/20 
             elif(self.current_driving_speed1 < 0):
-                self.current_turn_speed1 = -self.turn_speed1 * self.current_driving_speed1/20
+                self.current_turn_speed1 = -self.turn_speed * self.current_driving_speed1/20
         else:
             self.current_turn_speed1 = 0 
         # go forward
         if self.UP_key_down:
             if (self.current_driving_speed1 < self.max_speed):
-                self.current_driving_speed1 += self.driving_speed1 * delta_time
+                self.current_driving_speed1 += self.acceleration * delta_time
         else: 
             if (not self.DOWN_key_down and self.current_driving_speed1 > 0):
-                self.current_driving_speed1 -= self.driving_speed1 * delta_time
+                self.current_driving_speed1 -= self.acceleration * delta_time
         if self.DOWN_key_down:
             if (self.current_driving_speed1 > -self.max_speed):
-                self.current_driving_speed1 += -self.driving_speed1 * delta_time
+                self.current_driving_speed1 += -self.acceleration * delta_time
         else: 
-            if (not self.DOWN_key_down and self.current_driving_speed1 < 0):
-                self.current_driving_speed1 += self.driving_speed1 * delta_time
+            if (not self.UP_key_down and self.current_driving_speed1 < 0):
+                self.current_driving_speed1 += self.acceleration * delta_time
                 
         self.total_turn1 += self.current_turn_speed1 * delta_time
         distance = self.current_driving_speed1 
@@ -240,29 +255,29 @@ class GraphicsProgram3D:
         #go left or right
         if (self.A_key_down):
             if(self.current_driving_speed2 > 0):
-                self.current_turn_speed2 = self.turn_speed2 * self.current_driving_speed2/20
+                self.current_turn_speed2 = self.turn_speed * self.current_driving_speed2/20
             elif(self.current_driving_speed2 < 0):
-                self.current_turn_speed2 = self.turn_speed2 * self.current_driving_speed2/20 
+                self.current_turn_speed2 = self.turn_speed * self.current_driving_speed2/20 
         elif (self.D_key_down):
             if(self.current_driving_speed2 > 0):
-                self.current_turn_speed2 = -self.turn_speed2 * self.current_driving_speed2/20 
+                self.current_turn_speed2 = -self.turn_speed * self.current_driving_speed2/20 
             elif(self.current_driving_speed2 < 0):
-                self.current_turn_speed2 = -self.turn_speed2 * self.current_driving_speed2/20
+                self.current_turn_speed2 = -self.turn_speed * self.current_driving_speed2/20
         else:
             self.current_turn_speed2 = 0 
         # go forward
         if self.W_key_down:
             if (self.current_driving_speed2 < self.max_speed):
-                self.current_driving_speed2 += self.driving_speed2 * delta_time
+                self.current_driving_speed2 += self.acceleration * delta_time
         else: 
             if (not self.S_key_down and self.current_driving_speed2 > 0):
-                self.current_driving_speed2 -= self.driving_speed2 * delta_time
+                self.current_driving_speed2 -= self.acceleration * delta_time
         if self.S_key_down:
             if (self.current_driving_speed2 > -self.max_speed):
-                self.current_driving_speed2 += -self.driving_speed2 * delta_time
+                self.current_driving_speed2 += -self.acceleration * delta_time
         else: 
-            if (not self.S_key_down and self.current_driving_speed2 < 0):
-                self.current_driving_speed2 += self.driving_speed2 * delta_time
+            if (not self.W_key_down and self.current_driving_speed2 < 0):
+                self.current_driving_speed2 += self.acceleration * delta_time
                 
         self.total_turn2 += self.current_turn_speed2 * delta_time
         distance = self.current_driving_speed2
@@ -273,16 +288,19 @@ class GraphicsProgram3D:
         self.car2_pos.x += self.car2_motion.x * delta_time
         self.car2_pos.z += self.car2_motion.z * delta_time
 
+
         # Detect collision between cars
         if (self.model_matrix_car1 != 0):
+            self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+            self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
             self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
             self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
             self.detectCarCollision(delta_time) 
         
-        if (self.model_matrix_outer_circle != 0):
-            self.outer_collision_points = self.circle_2D.get_collision_points(self.model_matrix_outer_circle)
-            self.inner_collision_points = self.circle_2D.get_collision_points(self.model_matrix_inner_circle)
+        # Detect collision on racetrack boarders
+        if (self.outer_collision_points != []):
             self.detectBorderCollision(delta_time)
+            self.detectGoal(delta_time)
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
@@ -360,8 +378,8 @@ class GraphicsProgram3D:
         self.model_matrix.add_translation(0.5, 0.4, 0.8)
         self.model_matrix.add_scale(2.1, 0.5, 4.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        if (self.model_matrix_outer_circle == 0):
-            self.model_matrix_outer_circle = self.model_matrix.matrix
+        if (self.outer_collision_points == []):
+            self.outer_collision_points = self.circle_2D.get_collision_points(self.model_matrix.matrix)
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -394,6 +412,8 @@ class GraphicsProgram3D:
         self.model_matrix.add_translation(23.4, 0.4, 0.8)
         self.model_matrix.add_scale(13.4, 0.5, 1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        if (self.goal_collision_points == []):
+            self.goal_collision_points = self.cube_2D.get_collision_points(self.model_matrix.matrix)
         self.cube_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -410,12 +430,12 @@ class GraphicsProgram3D:
         self.model_matrix.add_translation(0.5, 0.6, 0.8)
         self.model_matrix.add_scale(1.1, 0.5, 3.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        if (self.model_matrix_inner_circle == 0):
-            self.model_matrix_inner_circle = self.model_matrix.matrix
+        if (self.inner_collision_points == []):
+            self.inner_collision_points = self.circle_2D.get_collision_points(self.model_matrix.matrix)
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
-        # Inner boarder with grass or smallerTrack
+        # Inner boarder with grass 
         glActiveTexture(GL_TEXTURE0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -483,23 +503,6 @@ class GraphicsProgram3D:
         self.displayScreen()
 
         pygame.display.flip()
-
-    # def goalEntered(self):
-    #     temp_ang = 0
-    #     while temp_ang < 2 * pi:
-    #         x1 = self.view_matrix_1.eye.x + self.collision_radius * cos(temp_ang)
-    #         y1 = self.view_matrix_1.eye.y
-    #         z1 = self.view_matrix_1.eye.z + self.collision_radius * sin(temp_ang)
-    #         x2 = self.view_matrix_2.eye.x + self.collision_radius * cos(temp_ang)
-    #         y2 = self.view_matrix_2.eye.y
-    #         z2 = self.view_matrix_2.eye.z + self.collision_radius * sin(temp_ang)
-    #         temp_ang += (pi * 2)/16
-    #         point1 = Point(x1, y1, z1) 
-    #         point2 = Point(x2, y2, z2) 
-    #         if point1.x >= self.cube_collision_points[0] and point1.x <= self.cube_collision_points[1] or point2.x >= self.cube_collision_points[0] and point2.x <= self.cube_collision_points[1]:
-    #                 if point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3] or point.z >= self.cube_collision_points[2] and point.z <= self.cube_collision_points[3]:
-    #                     self.view_matrix_1.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
-    #                     self.view_matrix_2.look(Point(0, 0, 3), Point(0, 0, 0), Vector(0, 1, 0))
 
     def program_loop(self):
         exiting = False

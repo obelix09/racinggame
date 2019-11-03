@@ -37,9 +37,6 @@ void main(void)
 	vec4 mat_diffuse = u_mat_diffuse * texture2D(u_diffuse_texture, v_uv);
 	vec4 mat_specular = u_mat_specular * texture2D(u_specular_texture, v_uv);
 
-	// If opacity is wanted, one can add this variable:
-	// float opacity = texture2D(u_diffuse_texture, v_uv).r;
-
 	// Calculating each light its specular and diffuse
     float lambert_1 = max(dot(v_normal, normalize(v_s_1)), 0.0);
     float phong_1 = max(dot(v_normal, normalize(v_h_1)), 0.0);

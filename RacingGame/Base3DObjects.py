@@ -229,6 +229,29 @@ class Cube_2D:
         glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
 
+    def get_collision_points(self, model_matrix):
+        #first point
+        pointX1 = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        pointZ1 = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
+
+        #third point
+        pointX2 = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        pointZ2 = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11]  
+
+        return [Point(pointX1 , 0, pointZ1), Point(pointX2 , 0, pointZ2)]
+
+    def get_global_vector(self, motion, model_matrix):
+        vectorX = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] + 0 * model_matrix[3]
+        vectorZ = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] + 0 * model_matrix[11]
+
+        return Vector(vectorX, 0, vectorZ)
+
+    def get_global_point(self, point, model_matrix):
+        pointX = 1 * model_matrix[3]
+        pointZ = 1 * model_matrix[11]
+
+        return Point(pointX, 0, pointZ)
+
 class Circle_2D:
         def __init__(self, x, y , z,  radius = 15, sides = 19):
             self.fullCircle = 2.2 * pi
