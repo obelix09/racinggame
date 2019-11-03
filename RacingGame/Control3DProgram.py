@@ -225,104 +225,103 @@ class GraphicsProgram3D:
         # check car 1 
         p_hit = goalLine.detect_collision(car1_real_pos, self.car1_real_motion, delta_time)
         if p_hit:
-            print("YAS1")
             self.round1 += 1
-            if (self.round1 == 3): 
+            if (self.round1 == 6): 
                 print("Racecar 1 wins")
         # Check car 2
         p_hit = goalLine.detect_collision(car2_real_pos, self.car2_real_motion, delta_time)
         if p_hit:
-            print("YAS2")
             self.round2 += 1
-            if (self.round2 == 3): 
+            if (self.round2 == 6): 
                 print("Racecar 2 wins")
 
     def update(self):
         self.timer = ((pygame.time.get_ticks() - self.start_ticks) / 1000)
         delta_time = self.clock.tick() / 1000.0
         
-        ########### Car controls 1 ############
-        #go left or right
-        if (self.LEFT_key_down):
-            if(self.current_driving_speed1 > 0):
-                self.current_turn_speed1 = self.turn_speed * self.current_driving_speed1/20
-            elif(self.current_driving_speed1 < 0):
-                self.current_turn_speed1 = self.turn_speed * self.current_driving_speed1/20 
-        elif (self.RIGHT_key_down):
-            if(self.current_driving_speed1 > 0):
-                self.current_turn_speed1 = -self.turn_speed * self.current_driving_speed1/20 
-            elif(self.current_driving_speed1 < 0):
-                self.current_turn_speed1 = -self.turn_speed * self.current_driving_speed1/20
-        else:
-            self.current_turn_speed1 = 0 
-        # go forward
-        if self.UP_key_down:
-            if (self.current_driving_speed1 < self.max_speed):
-                self.current_driving_speed1 += self.acceleration * delta_time
-        else: 
-            if (not self.DOWN_key_down and self.current_driving_speed1 > 0):
-                self.current_driving_speed1 -= self.acceleration * delta_time
-        if self.DOWN_key_down:
-            if (self.current_driving_speed1 > -self.max_speed):
-                self.current_driving_speed1 += -self.acceleration * delta_time
-        else: 
-            if (not self.UP_key_down and self.current_driving_speed1 < 0):
-                self.current_driving_speed1 += self.acceleration * delta_time
+        if(13 < self.timer):
+            ########### Car controls 1 ############
+            #go left or right
+            if (self.LEFT_key_down):
+                if(self.current_driving_speed1 > 0):
+                    self.current_turn_speed1 = self.turn_speed * self.current_driving_speed1/20
+                elif(self.current_driving_speed1 < 0):
+                    self.current_turn_speed1 = self.turn_speed * self.current_driving_speed1/20 
+            elif (self.RIGHT_key_down):
+                if(self.current_driving_speed1 > 0):
+                    self.current_turn_speed1 = -self.turn_speed * self.current_driving_speed1/20 
+                elif(self.current_driving_speed1 < 0):
+                    self.current_turn_speed1 = -self.turn_speed * self.current_driving_speed1/20
+            else:
+                self.current_turn_speed1 = 0 
+            # go forward
+            if self.UP_key_down:
+                if (self.current_driving_speed1 < self.max_speed):
+                    self.current_driving_speed1 += self.acceleration * delta_time
+            else: 
+                if (not self.DOWN_key_down and self.current_driving_speed1 > 0):
+                    self.current_driving_speed1 -= self.acceleration * delta_time
+            if self.DOWN_key_down:
+                if (self.current_driving_speed1 > -self.max_speed):
+                    self.current_driving_speed1 += -self.acceleration * delta_time
+            else: 
+                if (not self.UP_key_down and self.current_driving_speed1 < 0):
+                    self.current_driving_speed1 += self.acceleration * delta_time
+                    
+            self.total_turn1 += self.current_turn_speed1 * delta_time
+            distance = self.current_driving_speed1 
+
+            self.car1_motion.x = distance * sin(self.total_turn1 * pi/180)
+            self.car1_motion.z = distance * cos(self.total_turn1 * pi/180)
+            self.car1_pos += self.car1_motion * delta_time
+
+        ########### Car controls 2 ############
+            #go left or right
+            if (self.A_key_down):
+                if(self.current_driving_speed2 > 0):
+                    self.current_turn_speed2 = self.turn_speed * self.current_driving_speed2/20
+                elif(self.current_driving_speed2 < 0):
+                    self.current_turn_speed2 = self.turn_speed * self.current_driving_speed2/20 
+            elif (self.D_key_down):
+                if(self.current_driving_speed2 > 0):
+                    self.current_turn_speed2 = -self.turn_speed * self.current_driving_speed2/20 
+                elif(self.current_driving_speed2 < 0):
+                    self.current_turn_speed2 = -self.turn_speed * self.current_driving_speed2/20
+            else:
+                self.current_turn_speed2 = 0 
+            # go forward
+            if self.W_key_down:
+                if (self.current_driving_speed2 < self.max_speed):
+                    self.current_driving_speed2 += self.acceleration * delta_time
+            else: 
+                if (not self.S_key_down and self.current_driving_speed2 > 0):
+                    self.current_driving_speed2 -= self.acceleration * delta_time
+            if self.S_key_down:
+                if (self.current_driving_speed2 > -self.max_speed):
+                    self.current_driving_speed2 += -self.acceleration * delta_time
+            else: 
+                if (not self.W_key_down and self.current_driving_speed2 < 0):
+                    self.current_driving_speed2 += self.acceleration * delta_time
+                    
+            self.total_turn2 += self.current_turn_speed2 * delta_time
+            distance = self.current_driving_speed2
+
+            self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
+            self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
+            self.car2_pos += self.car2_motion * delta_time
+            if (self.model_matrix_car1 != 0 and self.model_matrix_car2 != 0):
+                # Detect collision between cars
+                if (self.model_matrix_car1 != 0):
+                    self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+                    self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
+                    self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
+                    self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
+                    self.detectCarCollision(delta_time) 
                 
-        self.total_turn1 += self.current_turn_speed1 * delta_time
-        distance = self.current_driving_speed1 
-
-        self.car1_motion.x = distance * sin(self.total_turn1 * pi/180)
-        self.car1_motion.z = distance * cos(self.total_turn1 * pi/180)
-        self.car1_pos += self.car1_motion * delta_time
-
-       ########### Car controls 2 ############
-        #go left or right
-        if (self.A_key_down):
-            if(self.current_driving_speed2 > 0):
-                self.current_turn_speed2 = self.turn_speed * self.current_driving_speed2/20
-            elif(self.current_driving_speed2 < 0):
-                self.current_turn_speed2 = self.turn_speed * self.current_driving_speed2/20 
-        elif (self.D_key_down):
-            if(self.current_driving_speed2 > 0):
-                self.current_turn_speed2 = -self.turn_speed * self.current_driving_speed2/20 
-            elif(self.current_driving_speed2 < 0):
-                self.current_turn_speed2 = -self.turn_speed * self.current_driving_speed2/20
-        else:
-            self.current_turn_speed2 = 0 
-        # go forward
-        if self.W_key_down:
-            if (self.current_driving_speed2 < self.max_speed):
-                self.current_driving_speed2 += self.acceleration * delta_time
-        else: 
-            if (not self.S_key_down and self.current_driving_speed2 > 0):
-                self.current_driving_speed2 -= self.acceleration * delta_time
-        if self.S_key_down:
-            if (self.current_driving_speed2 > -self.max_speed):
-                self.current_driving_speed2 += -self.acceleration * delta_time
-        else: 
-            if (not self.W_key_down and self.current_driving_speed2 < 0):
-                self.current_driving_speed2 += self.acceleration * delta_time
-                
-        self.total_turn2 += self.current_turn_speed2 * delta_time
-        distance = self.current_driving_speed2
-
-        self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
-        self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
-        self.car2_pos += self.car2_motion * delta_time
-        if (self.model_matrix_car1 != 0 and self.model_matrix_car2 != 0):
-            # Detect collision between cars
-            if (self.model_matrix_car1 != 0):
-                self.car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
-                self.car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
-                self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
-                self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
-                self.detectCarCollision(delta_time) 
-            
-            # Detect collision on racetrack boarders
-            if (self.outer_collision_points != [] and self.inner_collision_points != [] and self.goal_collision_points != []):
-                self.detectBorderCollision(delta_time)
-                self.detectGoal(delta_time)
+                # Detect collision on racetrack boarders
+                if (self.outer_collision_points != [] and self.inner_collision_points != [] and self.goal_collision_points != []):
+                    self.detectBorderCollision(delta_time)
+                    self.detectGoal(delta_time)
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
