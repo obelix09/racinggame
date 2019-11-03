@@ -60,7 +60,7 @@ class GraphicsProgram3D:
         self.max_speed = 20
 
         # Racecar 1 variables
-        self.car1_pos = Point(0, 1, 0)
+        self.car1_pos = Point(0, 1, 1)
         self.car1_motion = Vector(0, 0, 0)
         self.car1_angle = 0
         self.driving_speed1 = 20
@@ -75,7 +75,7 @@ class GraphicsProgram3D:
         self.car1_collision_points = []
 
         # Racecar 2 variables
-        self.car2_pos = Point(0, 1, 0)
+        self.car2_pos = Point(0, 1, -1)
         self.car2_motion = Vector(0, 0, 0)
         self.car2_angle = 0
         self.driving_speed2 = 20
@@ -119,35 +119,39 @@ class GraphicsProgram3D:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_string)
         return tex_id
     
-    def detectCarCollision(self):
-        # self.car1_collision_points
-        # self.car2_collision_points
-        car1_collision = False
-        car2_collision = False
-
-        # Check collision on car1
-        for point1 in self.car1_collision_points:
-            # If point in car1 is between car2-minX and car2-maxX and between car2-minZ and car2-maxZ = collision
-            if (point1.x >= self.car2_collision_points[0].x and point1.x <= self.car2_collision_points[3].x):
-                if (point1.z >= self.car2_collision_points[0].z and point1.z <= self.car2_collision_points[3].z):
-                    car1_collision = True
-                    print("YAY1")
+    def detectCarCollision(self, delta_time):
+        # car1_collision = False
+        # car2_collision = False
+        car1_real_motion = self.racecar.get_motion_vector(self.car1_motion, self.model_matrix_car1)
+        car2_real_motion = self.racecar.get_motion_vector(self.car2_motion, self.model_matrix_car2)
+        # check collision for car1
+        for point in self.car1_collision_points:
+            lines = []
+            lines.append(Line(self.car2_collision_points[0], self.car2_collision_points[1]))
+            lines.append(Line(self.car2_collision_points[1], self.car2_collision_points[2]))
+            lines.append(Line(self.car2_collision_points[2], self.car2_collision_points[3]))
+            lines.append(Line(self.car2_collision_points[3], self.car2_collision_points[0]))
+            for line in lines:
+                unit_vector1 = line.detect_collision(point, car1_real_motion, delta_time)
+                if (unit_vector1 != False):
+                    print("YAY HIT ME1")
         
-        # Check collision on car2
-        for point2 in self.car2_collision_points:
-            # If point in car1 is between car1-minX and car1-maxX and between car1-minZ and car1-maxZ = collision
-            if (point2.x >= self.car1_collision_points[0].x and point2.x <= self.car1_collision_points[3].x):
-                if (point2.z >= self.car1_collision_points[0].z and point2.z <= self.car1_collision_points[3].z):
-                    car2_collision = True
-                    print("YAY2")
-     
-        if (not car1_collision and not car2_collision):
-            print("NO")
+        # check collision for car1
+        for point in self.car2_collision_points:
+            lines = []
+            lines.append(Line(self.car1_collision_points[0], self.car1_collision_points[1]))
+            lines.append(Line(self.car1_collision_points[1], self.car1_collision_points[2]))
+            lines.append(Line(self.car1_collision_points[2], self.car1_collision_points[3]))
+            lines.append(Line(self.car1_collision_points[3], self.car1_collision_points[0]))
+            for line in lines:
+                unit_vector2 = line.detect_collision(point, car2_real_motion, delta_time)
+                if (unit_vector2 != False):
+                    print("YAY HIT ME2")
 
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
-
+        
         ########### Car controls 1 ############
         #go left or right
         if (self.LEFT_key_down):
@@ -179,8 +183,10 @@ class GraphicsProgram3D:
         self.total_turn1 += self.current_turn_speed1 * delta_time
         distance = self.current_driving_speed1 * delta_time
 
-        self.car1_pos.x += distance * sin(self.total_turn1 * pi/180)
-        self.car1_pos.z += distance * cos(self.total_turn1 * pi/180)
+        self.car1_motion.x = distance * sin(self.total_turn1 * pi/180)
+        self.car1_motion.z = distance * cos(self.total_turn1 * pi/180)
+        self.car1_pos.x += self.car1_motion.x 
+        self.car1_pos.z += self.car1_motion.z
 
         # Calculate camera1 position
         self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
@@ -218,8 +224,10 @@ class GraphicsProgram3D:
         self.total_turn2 += self.current_turn_speed2 * delta_time
         distance = self.current_driving_speed2 * delta_time
 
-        self.car2_pos.x += distance * sin(self.total_turn2 * pi/180)
-        self.car2_pos.z += distance * cos(self.total_turn2 * pi/180)
+        self.car2_motion.x = distance * sin(self.total_turn2 * pi/180)
+        self.car2_motion.z = distance * cos(self.total_turn2 * pi/180)
+        self.car2_pos.x += self.car2_motion.x
+        self.car2_pos.z += self.car2_motion.z
 
         # Calculate camera2 position
         self.camera2_pos.x = self.car2_pos.x - (self.horizontal_distance * sin(self.total_turn2 * pi/180))
@@ -230,7 +238,7 @@ class GraphicsProgram3D:
         if (self.model_matrix_car1 != 0):
             self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
             self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
-            self.detectCarCollision()
+            self.detectCarCollision(delta_time)
            
 
     def displayScreen(self):

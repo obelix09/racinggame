@@ -44,12 +44,47 @@ class Vector:
         self.x /= length
         self.y /= length
         self.z /= length
+        return Vector(self.x/length, self.y/length, self.z/length)
 
     def dot(self, other):
         return self.x * other.x + self.y * other.y + self.z * other.z
 
     def cross(self, other):
         return Vector(self.y*other.z - self.z*other.y, self.z*other.x - self.x*other.z, self.x*other.y - self.y*other.x)
+
+class Line():
+    def __init__(self, point_1, point_2):
+        self.point_1 = point_1
+        self.point_2 = point_2
+        self.vector = Vector(point_1.x - point_2.x, point_1.y - point_2.y, point_1.z - point_2.z)
+        self.n_vector = Vector(-self.vector.z, self.vector.y, self.vector.x)
+        self.unit_vector = self.n_vector.normalize()
+
+    def detect_collision(self, point, motion , delta_time):
+        b_a = self.point_1 - point
+        n_b_a = self.unit_vector.dot(b_a)
+        n_c = self.unit_vector.dot(motion)
+        if (n_c != 0):
+            t_hit = (n_b_a / n_c)
+            if ((t_hit >= 0) and (t_hit <= delta_time)):
+                print("YAY t-time!")
+                #Calculate position
+                p_hit = Point((point.x + (t_hit * motion.x)), 0, (point.z + (t_hit * motion.z)))
+                if (self.point_1.x == self.point_2.x) :
+                    if (self.point_1.z >= self.point_2.z):
+                        if ((p_hit.z >= self.point_2.z) and (p_hit.z <= self.point_1.z)):
+                            return self.unit_vector
+                    else:
+                        if ((p_hit.z <= self.point_2.z) and (p_hit.z >= self.point_1.z)):
+                            return self.unit_vector
+                else :
+                    if (self.point_1.x >= self.point_2.x):
+                        if ((p_hit.x >= self.point_2.x) and (p_hit.x <= self.point_1.x)):
+                            return self.unit_vector
+                    else :
+                        if ((p_hit.x <= self.point_2.x) and (p_hit.x >= self.point_1.x)):
+                            return self.unit_vector
+        return False
 
 class Cube:
     def __init__(self):
@@ -230,13 +265,6 @@ class Circle_2D:
 
         def draw(self, shader):
             glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
-
-
-# class Ghost:
-#     def __init__(self):
-#         self.position_array = [0.0
-
-#         ]
 
 class Skybox:
     def __init__(self):
@@ -457,20 +485,26 @@ class Racecar:
         glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
     
     def get_collision_points(self, model_matrix):
-        minPointX = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
-        maxPointX = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        #first point
+        pointX1 = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        pointZ1 = -0.5 * model_matrix[8] + -0.5 * model_matrix[9] + -0.5 * model_matrix[10] + 1 * model_matrix[11] 
 
-        if (minPointX > maxPointX):
-            temp = minPointX
-            minPointX = maxPointX 
-            maxPointX = temp
+        #second point
+        pointX2 = -0.5 * model_matrix[0] + -0.5 * model_matrix[1] + -0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        pointZ2 = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
 
-        minPointZ = -0.5 * model_matrix[8] + -0.5 * model_matrix[9] + -0.5 * model_matrix[10] + 1 * model_matrix[11] 
-        maxPointZ = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
+        #third point
+        pointX3 = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        pointZ3 = 0.5 * model_matrix[8] + 0.5 * model_matrix[9] + 0.5 * model_matrix[10] + 1 * model_matrix[11] 
 
-        if (minPointZ > maxPointZ):
-            temp = minPointZ
-            minPointZ = maxPointZ 
-            maxPointZ = temp
+        #forth point
+        pointX4 = 0.5 * model_matrix[0] + 0.5 * model_matrix[1] + 0.5 * model_matrix[2] + 1 * model_matrix[3] 
+        pointZ4 = -0.5 * model_matrix[8] + -0.5 * model_matrix[9] + -0.5 * model_matrix[10] + 1 * model_matrix[11] 
 
-        return [Point(minPointX, 0, minPointZ), Point(maxPointX, 0, minPointZ), Point(minPointX, 0, maxPointZ), Point(maxPointX, 0, maxPointZ)]
+        return [Point(pointX1 , 0, pointZ1), Point(pointX2 , 0, pointZ2), Point(pointX3 , 0, pointZ3), Point(pointX4 , 0, pointZ4)]
+
+    def get_motion_vector(self, motion, model_matrix):
+        vectorX1 = motion.x * model_matrix[0] + motion.x * model_matrix[1] + motion.x * model_matrix[2] + 0 * model_matrix[3]
+        vectorZ1 = motion.z * model_matrix[8] + motion.z * model_matrix[9] + motion.z * model_matrix[10] + 0 * model_matrix[11]
+
+        return Vector(vectorX1, 0, vectorZ1)
