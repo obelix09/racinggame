@@ -137,14 +137,17 @@ class GraphicsProgram3D:
                 p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
                     print("YAS1-outer")
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
                     self.car1_pos -= self.car1_motion * delta_time
-                    break
+                    self.car1_pos += self.new_motion * delta_time
             for point in self.car2_collision_points: 
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
                     print("YAS2-outer")
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
                     self.car2_pos -= self.car2_motion * delta_time
-                    break
+                    self.car2_pos += self.new_motion * delta_time
+
         
         length = len(self.inner_collision_points)
         for i in range(length):
@@ -156,14 +159,16 @@ class GraphicsProgram3D:
                 p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
                     print("YAS1-inner")
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
                     self.car1_pos -= self.car1_motion * delta_time
-                    break
+                    self.car1_pos += self.new_motion * delta_time
             for point in self.car2_collision_points: 
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
                     print("YAS2-inner")
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
                     self.car2_pos -= self.car2_motion * delta_time
-                    break
+                    self.car2_pos += self.new_motion * delta_time
 
 
     def detectCarCollision(self, delta_time):
@@ -178,7 +183,9 @@ class GraphicsProgram3D:
                 p_hit = line.detect_collision(point, self.car1_real_motion, delta_time)
                 if p_hit:
                     print("YAS1")
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
                     self.car1_pos -= self.car1_motion * delta_time
+                    self.car1_pos += self.new_motion * delta_time
         
         # check collision for car2
         for point in self.car2_collision_points:
@@ -191,7 +198,9 @@ class GraphicsProgram3D:
                 p_hit = line.detect_collision(point, self.car2_real_motion, delta_time)
                 if p_hit:
                     print("YAS2")
+                    self.new_motion = Vector(line.point_2.x - line.point_1.x, line.point_2.y - line.point_1.y, line.point_2.z - line.point_1.z)
                     self.car2_pos -= self.car2_motion * delta_time
+                    self.car2_pos += self.new_motion * delta_time
 
     def detectGoal(self, delta_time):
         car1_real_pos = self.racecar.get_global_vector(self.car1_pos, self.model_matrix_car1)
@@ -248,7 +257,6 @@ class GraphicsProgram3D:
         self.total_turn1 += self.current_turn_speed1 * delta_time
         distance = self.current_driving_speed1 
 
-        self.car1_old_pos = self.car1_pos
         self.car1_motion.x = distance * sin(self.total_turn1 * pi/180)
         self.car1_motion.z = distance * cos(self.total_turn1 * pi/180)
         self.car1_pos += self.car1_motion * delta_time
