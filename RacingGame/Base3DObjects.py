@@ -264,6 +264,16 @@ class Circle_2D:
 
         def draw(self, shader):
             glDrawArrays( GL_TRIANGLE_FAN, 0, self.nrOfVertices)
+        
+        def get_collision_points(self, model_matrix):
+            collision_points = []
+            for i in range(len(self.vertices))[::3]:
+                 #first point
+                pointX = self.vertices[i] * model_matrix[0] + self.vertices[i] * model_matrix[1] + self.vertices[i] * model_matrix[2] + 1 * model_matrix[3] 
+                pointZ = self.vertices[i+2] * model_matrix[8] + self.vertices[i+2] * model_matrix[9] + self.vertices[i+2] * model_matrix[10] + 1 * model_matrix[11] 
+                collision_points.append(Point(pointX, 0, pointZ))
+
+            return collision_points
 
 class Skybox:
     def __init__(self):

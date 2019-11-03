@@ -86,14 +86,24 @@ class GraphicsProgram3D:
         self.current_turn_speed2 = 0
         self.total_turn2 = 0
 
-        # model matrix for car1
+        # model matrix for car2
         self.model_matrix_car2 = 0
-        # Collision coordinates car1
+        # Collision coordinates car2
         self.car2_collision_points = []
+
+        # model matrix for outer racetrack circle 
+        self.model_matrix_outer_circle = 0
+        # Collision coordinates outer racetrack circle 
+        self.outer_circle_collision_points = []
+
+        # model matrix for inner racetrack circle 
+        self.model_matrix_inner_circle = 0
+        # Collision coordinates inner racetrack circle 
+        self.inner_circle_collision_points = []
 
         # Camera variables
         self.distance_from_player = 5
-        self.camera_pitch = 250 # Degrees
+        self.camera_pitch = 150 # Degrees
         self.horizontal_distance = self.distance_from_player * cos(self.camera_pitch)
         self.vertical_distance = self.distance_from_player * sin(self.camera_pitch)
         self.camera1_pos = Point(0, 1, 0)
@@ -121,8 +131,42 @@ class GraphicsProgram3D:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_string)
         return tex_id
     
+    def detectBorderCollision(self, delta_time):
+        car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
+        car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
+
+        length = len(self.outer_collision_points)
+        for i in range(length):
+            if (i == length-1):
+                line = Line(self.outer_collision_points[i], self.outer_collision_points[0])
+            else:
+                line = Line(self.outer_collision_points[i], self.outer_collision_points[i+1])
+            for point in self.car1_collision_points: 
+                p_hit = line.detect_collision(point, car1_real_motion, delta_time)
+                if p_hit:
+                    print("YAS1-outer")
+            for point in self.car2_collision_points: 
+                p_hit = line.detect_collision(point, car2_real_motion, delta_time)
+                if p_hit:
+                    print("YAS2-outer")
+        
+        length = len(self.inner_collision_points)
+        for i in range(length):
+            if (i == length-1):
+                line = Line(self.inner_collision_points[i], self.inner_collision_points[0])
+            else:
+                line = Line(self.inner_collision_points[i], self.inner_collision_points[i+1])
+            for point in self.car1_collision_points: 
+                p_hit = line.detect_collision(point, car1_real_motion, delta_time)
+                if p_hit:
+                    print("YAS1-inner")
+            for point in self.car2_collision_points: 
+                p_hit = line.detect_collision(point, car2_real_motion, delta_time)
+                if p_hit:
+                    print("YAS2-inner")
+
+
     def detectCarCollision(self, delta_time):
-        # car2_collision = False
         car1_real_motion = self.racecar.get_global_vector(self.car1_motion, self.model_matrix_car1)
         car2_real_motion = self.racecar.get_global_vector(self.car2_motion, self.model_matrix_car2)
         # check collision for car1
@@ -137,8 +181,6 @@ class GraphicsProgram3D:
                 if p_hit:
                     print("YAS1")
                     self.car1_pos = self.car1_old_pos
-
-                    
         
         # check collision for car2
         for point in self.car2_collision_points:
@@ -194,11 +236,6 @@ class GraphicsProgram3D:
         self.car1_pos.x += self.car1_motion.x * delta_time
         self.car1_pos.z += self.car1_motion.z * delta_time
 
-        # Calculate camera1 position
-        self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
-        self.camera1_pos.y = -(self.car1_pos.y + self.vertical_distance)
-        self.camera1_pos.z = self.car1_pos.z - (self.horizontal_distance * cos(self.total_turn1 * pi/180))
-
        ########### Car controls 2 ############
         #go left or right
         if (self.A_key_down):
@@ -236,17 +273,26 @@ class GraphicsProgram3D:
         self.car2_pos.x += self.car2_motion.x * delta_time
         self.car2_pos.z += self.car2_motion.z * delta_time
 
-        # Calculate camera2 position
-        self.camera2_pos.x = self.car2_pos.x - (self.horizontal_distance * sin(self.total_turn2 * pi/180))
-        self.camera2_pos.y = -(self.car2_pos.y + self.vertical_distance)
-        self.camera2_pos.z = self.car2_pos.z - (self.horizontal_distance * cos(self.total_turn2 * pi/180))
-
         # Detect collision between cars
         if (self.model_matrix_car1 != 0):
             self.car1_collision_points = self.racecar.get_collision_points(self.model_matrix_car1)
             self.car2_collision_points = self.racecar.get_collision_points(self.model_matrix_car2)
-            self.detectCarCollision(delta_time)
-           
+            self.detectCarCollision(delta_time) 
+        
+        if (self.model_matrix_outer_circle != 0):
+            self.outer_collision_points = self.circle_2D.get_collision_points(self.model_matrix_outer_circle)
+            self.inner_collision_points = self.circle_2D.get_collision_points(self.model_matrix_inner_circle)
+            self.detectBorderCollision(delta_time)
+
+        # Calculate camera1 position
+        self.camera1_pos.x = self.car1_pos.x - (self.horizontal_distance * sin(self.total_turn1 * pi/180))
+        self.camera1_pos.y = -(self.car1_pos.y + self.vertical_distance)
+        self.camera1_pos.z = self.car1_pos.z - (self.horizontal_distance * cos(self.total_turn1 * pi/180))
+
+        # Calculate camera2 position
+        self.camera2_pos.x = self.car2_pos.x - (self.horizontal_distance * sin(self.total_turn2 * pi/180))
+        self.camera2_pos.y = -(self.car2_pos.y + self.vertical_distance)
+        self.camera2_pos.z = self.car2_pos.z - (self.horizontal_distance * cos(self.total_turn2 * pi/180))
 
     def displayScreen(self):
         # Setting up the light positions:
@@ -314,6 +360,8 @@ class GraphicsProgram3D:
         self.model_matrix.add_translation(0.5, 0.4, 0.8)
         self.model_matrix.add_scale(2.1, 0.5, 4.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        if (self.model_matrix_outer_circle == 0):
+            self.model_matrix_outer_circle = self.model_matrix.matrix
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
@@ -362,6 +410,8 @@ class GraphicsProgram3D:
         self.model_matrix.add_translation(0.5, 0.6, 0.8)
         self.model_matrix.add_scale(1.1, 0.5, 3.1)
         self.shader.set_model_matrix(self.model_matrix.matrix)
+        if (self.model_matrix_inner_circle == 0):
+            self.model_matrix_inner_circle = self.model_matrix.matrix
         self.circle_2D.draw(self.shader)
         self.model_matrix.pop_matrix()
 
