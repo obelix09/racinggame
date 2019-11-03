@@ -499,37 +499,6 @@ class GraphicsProgram3D:
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
-        # Racecars
-        self.shader.set_material_diffuse(1.0, 1.0, 1.0, 0.5)
-        self.shader.set_material_specular(1.0, 1.0, 1.0)
-
-        # Racecar 1
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id06)
-        self.shader.set_diffuce_tex(0)
-        self.racecar.set_vertices(self.shader)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car1_pos.x, 1, self.car1_pos.z)
-        self.model_matrix.add_rotate_y(self.total_turn1 * pi/180)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.model_matrix_car1 = self.model_matrix.matrix
-        self.racecar.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
-        # Racecar 2
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id07)
-        self.shader.set_diffuce_tex(0)
-        self.racecar.set_vertices(self.shader)
-        self.model_matrix.push_matrix()
-        self.model_matrix.add_translation(self.car2_pos.x, 1, self.car2_pos.z)
-        self.model_matrix.add_rotate_y(self.total_turn2 * pi/180)
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.model_matrix_car2 = self.model_matrix.matrix
-        self.racecar.draw(self.shader)
-        self.model_matrix.pop_matrix()
-
 
         # Popup
         if(self.timer < 8):
