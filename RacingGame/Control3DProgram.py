@@ -518,13 +518,13 @@ class GraphicsProgram3D:
         # Player 1 camera
         self.view_matrix_1.look(self.camera1_pos, self.car1_pos, Vector(0, 1, 0))
         self.shader.set_view_matrix(self.view_matrix_1.get_matrix())
-        glViewport(0, 0, 800, 300)
+        glViewport(0, 300, 800, 300)
         self.displayScreen()
 
         # Player 2 camera
         self.view_matrix_2.look(self.camera2_pos, self.car2_pos, Vector(0, 1, 0))
         self.shader.set_view_matrix(self.view_matrix_2.get_matrix())
-        glViewport(0, 300, 800, 300)
+        glViewport(0, 0, 800, 300)
         self.displayScreen()
 
         pygame.display.flip()
