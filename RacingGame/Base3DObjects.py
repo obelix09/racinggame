@@ -57,7 +57,7 @@ class Line():
         self.point_1 = point_1
         self.point_2 = point_2
         self.vector = Vector(point_1.x - point_2.x, point_1.y - point_2.y, point_1.z - point_2.z)
-        self.n_vector = Vector(-self.vector.z, self.vector.y, self.vector.x)
+        self.n_vector = Vector(self.vector.z, self.vector.y, -self.vector.x)
         self.unit_vector = self.n_vector.normalize()
 
     def detect_collision(self, point, motion , delta_time):
