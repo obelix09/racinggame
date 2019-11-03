@@ -110,6 +110,11 @@ class GraphicsProgram3D:
         self.texture_id08 = self.load_texture("/textures/boarder.jpg")
         self.texture_id09 = self.load_texture("/textures/goal.jpg")
 
+        # Sound effect
+        pygame.mixer.init()
+        pygame.mixer.music.load('ghostBusters.mp3')
+        pygame.mixer.music.play()
+
 
     def load_texture(self, path_string):
         skybox = pygame.image.load(sys.path[0] + path_string)
